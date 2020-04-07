@@ -12,11 +12,12 @@ import numpy as np
 import skimage.io as io
 
 import matplotlib.pyplot as plt
-import pylab
+import matplotlib.patches as patches
+# import pylab
 
 
 dataDir = os.environ["PY_WS"]+"/object_detection/COCO_dataset"
-dataType = 'val2017'
+dataType = 'train2017' #'val2017'
 annFile = '{}/annotations/instances_{}.json'.format(dataDir, dataType)
 captionsFile = '{}/annotations/captions_{}.json'.format(dataDir, dataType)
 print("type of annotation file", type(annFile))
@@ -36,29 +37,34 @@ print('COCO supercategories: \n{}'.format(' '.join(nms)))
 
 
 # get all images containing given categories, select one at random
-catIds = coco.getCatIds(catNms=['apple', 'wine glass'])
+catIds = coco.getCatIds(catNms=['person'])
 imgIds = coco.getImgIds(catIds=catIds)
-img = coco.loadImgs(imgIds[np.random.randint(0, len(imgIds))])[0]
+# img = coco.loadImgs(imgIds[np.random.randint(0, len(imgIds))])[0]
+img = coco.loadImgs(imgIds[0])[0]
 
 print("nb of images in the category", len(imgIds))
+print(img['file_name'])
 
 # load and display image
 I = io.imread('%s/%s/%s'%(dataDir, dataType, img['file_name']))
-plt.axis('off')
-# plt.imshow(I)
-
-
 
 
 # load and display instance annotations
-plt.imshow(I); plt.axis('off')
+fig, ax = plt.subplots(1)
+ax.imshow(I)
+ax.axis('off')
 annIds = coco.getAnnIds(imgIds=img['id'], catIds=catIds, iscrowd=None)
 anns = coco.loadAnns(annIds)
-for an in anns:
-    print(an)
+print(anns)
+
+# for an in anns:
+#     tt_box = an.get("bbox")
+#     rect = patches.Rectangle(tt_box[:2], tt_box[2], tt_box[3], linewidth=1, edgecolor='r', facecolor='none')
+#     ax.add_patch(rect)
+#     # print(an)
 
 coco.showAnns(anns)
-# plt.show()
+plt.show()
 
 annIds = coco_caps.getAnnIds(imgIds=img['id'])
 anns = coco_caps.loadAnns(annIds)

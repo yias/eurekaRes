@@ -1,0 +1,15 @@
+{
+    "labels": ["person", "car", "motorcycle" , "bus", "train", "truck", "boat", 
+        "bird", "cat", "dog", "horse", 
+        "umbrella", "handbag", "suitcase", 
+        "frisbee", "sports ball", 
+        "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", 
+        "banana", "apple", "sandwich", "orange",  
+        "chair", "couch", "potted plant", "bed", "dining table", 
+        "laptop", "mouse", "keyboard", "cell phone", 
+        "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"],
+    "max_height": 720,
+    "max_width": 1280,
+    "do_padding": true,
+    "do_cropping": false
+}
