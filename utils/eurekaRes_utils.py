@@ -63,13 +63,31 @@ def add_classes_names_to_image(image, boxes_coord, class_ids, class_names, score
     return image
 
 
-def mold_image(image, bbox, fHeight, fWidth, do_padding, min_scale=None):
+def preprocess_image(image, bbox, fHeight, fWidth, do_padding, min_scale=None):
+    """
+    funtion to process the image before training or testing
+
+    it return the pre-processed image, the new annotations, the window size, the scale and the padding area
+    """
+    new_img, window, scale, padding = mold_image(image, fHeight, fWidth, do_padding)
+
+    if bbox is not None:
+        bbox = bbox*scale
+        if do_padding:
+            bbox[:, 1] = bbox[:, 1] + padding[0][0]
+            bbox[:, 0] = bbox[:, 0] + padding[1][0]
+
+    return new_img, bbox, window, scale, padding
+    
+
+
+def mold_image(image, fHeight, fWidth, do_padding, min_scale=None):
     """
     function to resize and add padding in the image
     """
     # Keep track of image dtype and return results in the same dtype
     image_dtype = image.dtype
-    # print("insinside resize image, image dtype: ", image_dtype)
+
     # Default window (y1, x1, y2, x2) and default scale == 1.
     h, w = image.shape[:2]
 
@@ -94,12 +112,10 @@ def mold_image(image, bbox, fHeight, fWidth, do_padding, min_scale=None):
 
     # Resize image using bilinear interpolation
     if scale != 1:
-        image = resize(image, (round(h * scale), round(w * scale)),
-                       preserve_range=True)
+        image = resize(image, (round(h * scale), round(w * scale)), preserve_range=True)
 
-    print("inside resize image, image new shape: ", image.shape)
-    if bbox is not None:
-        bbox = bbox*scale
+    # if bbox is not None:
+    #     bbox = bbox*scale
 
     # Need padding or cropping?
     if do_padding:
@@ -112,13 +128,13 @@ def mold_image(image, bbox, fHeight, fWidth, do_padding, min_scale=None):
         padding = [(top_pad, bottom_pad), (left_pad, right_pad), (0, 0)]
         image = np.pad(image, padding, mode='constant', constant_values=0)
         window = (top_pad, left_pad, h + top_pad, w + left_pad)
-        if bbox is not None:
-            bbox[:, 1] = bbox[:, 1] + top_pad
-            bbox[:, 0] = bbox[:, 0] + left_pad
+        # if bbox is not None:
+        #     bbox[:, 1] = bbox[:, 1] + top_pad
+        #     bbox[:, 0] = bbox[:, 0] + left_pad
 
 
-    print("inside resize image, final image shape: ", image.shape)
-    return image.astype(image_dtype), bbox, window, scale, padding
+    # print("inside resize image, final image shape: ", image.shape)
+    return image.astype(image_dtype), window, scale, padding
 
 
 def resize(image, output_shape, order=1, mode='constant', cval=0, clip=True,

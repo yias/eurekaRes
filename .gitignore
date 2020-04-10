@@ -1,0 +1,13 @@
+# ignore the contains of the folders logfiles, data and build
+# logfiles/
+data/
+# build/
+utils/__pycache__/
+
+# ignore all the *.obj files
+*.obj
+# *.txt
+*.pdb
+*.o
+*.pyc
+*.csv

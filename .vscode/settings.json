@@ -1,0 +1,13 @@
+{
+    "python.pythonPath": "/usr/bin/python3.7",
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true,
+    "python.linting.pylintArgs": [
+            "--disable=C0103",
+            "--disable=C0301"
+        ],
+    "files.exclude": {
+        "**/COCO_dataset": true, // this excludes all folders  named "node_modules" from 
+    }
+
+}

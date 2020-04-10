@@ -1,0 +1,17 @@
+{
+    "labels": {
+        "person": ["person"],
+        "vehicles": ["car", "motorcycle" , "bus", "train", "truck", "boat"], 
+        "animals": ["bird", "cat", "dog", "horse"], 
+        "accessories": ["umbrella", "handbag", "suitcase"], 
+        "sports": ["frisbee", "sports ball"], 
+        "objects": ["bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"], 
+        "fruits": ["banana", "apple", "sandwich", "orange"],  
+        "furniture": ["chair", "couch", "potted plant", "bed", "dining table"], 
+        "tech": ["laptop", "mouse", "keyboard", "cell phone"]
+    },
+    "max_height": 720,
+    "max_width": 1280,
+    "do_padding": true,
+    "do_cropping": false
+}
