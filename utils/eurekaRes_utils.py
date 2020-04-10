@@ -9,7 +9,7 @@ import skimage.transform
 
 def random_colors(cSize):
     """
-    create color pallet, matrix cSize x 3 
+    create color pallet, matrix cSize x 3
     """
     rgbl = np.array([], dtype=int).reshape(0, 3)
     for _ in range(cSize):
@@ -67,18 +67,93 @@ def preprocess_image(image, bbox, fHeight, fWidth, do_padding, min_scale=None):
     """
     funtion to process the image before training or testing
 
-    it return the pre-processed image, the new annotations, the window size, the scale and the padding area
+    it returns the pre-processed image, the new annotations, the window size, the scale and the padding area
     """
     new_img, window, scale, padding = mold_image(image, fHeight, fWidth, do_padding)
 
     if bbox is not None:
-        bbox = bbox*scale
-        if do_padding:
-            bbox[:, 1] = bbox[:, 1] + padding[0][0]
-            bbox[:, 0] = bbox[:, 0] + padding[1][0]
+        bbox = mold_ann_boxes(bbox, scale, padding, do_padding)
+        # bbox = bbox*scale
+        # if do_padding:
+        #     bbox[:, 1] = bbox[:, 1] + padding[0][0]
+        #     bbox[:, 0] = bbox[:, 0] + padding[1][0]
 
     return new_img, bbox, window, scale, padding
-    
+
+
+def mold_ann_boxes(bbox, scale, padding, do_padding):
+    """
+    function to mold the annotation boxes
+    """
+    bbox = bbox*scale
+    if do_padding:
+        bbox[:, 1] = bbox[:, 1] + padding[0][0]
+        bbox[:, 0] = bbox[:, 0] + padding[1][0]
+
+    return bbox
+
+
+def find_image_molding(image_shape, fHeight, fWidth, do_padding, min_scale=None):
+    """
+    Function to find how the image should be molded according to the final image shape
+
+    It returns the window where the original image exist, the scalling
+    and the padding that needs to be done on the image
+    """
+    # Default window (y1, x1, y2, x2) and default scale == 1.
+    h, w = image_shape
+
+    window = (0, 0, h, w)
+    scale = 1
+    padding = [(0, 0), (0, 0), (0, 0)]
+    # crop = None
+
+    final_image_shape = [fHeight, fWidth]
+    max_dim = np.argmax(image_shape)
+    # Scale up but not down
+    scale = final_image_shape[max_dim]/image_shape[max_dim]
+
+    # Does it exceed max dim?
+    if round(scale*image_shape[1-max_dim]) > final_image_shape[1-max_dim]:
+        scale = final_image_shape[1-max_dim]/image_shape[1-max_dim]
+
+    # Need padding or cropping?
+    if do_padding:
+        # Get new height and width
+        h = round(h*scale)
+        w = round(w*scale)
+        top_pad = (fHeight - h) // 2
+        bottom_pad = fHeight - h - top_pad
+        left_pad = (fWidth - w) // 2
+        right_pad = fWidth - w - left_pad
+        padding = [(top_pad, bottom_pad), (left_pad, right_pad), (0, 0)]
+        window = (top_pad, left_pad, h + top_pad, w + left_pad)
+
+
+    # print("inside resize image, final image shape: ", image.shape)
+    return window, scale, padding
+
+
+def fast_mold_image(image, scale, padding, do_padding):
+    """
+    function to mold the image accoding to the scaling and padding preferences
+
+    it returns the molded image
+    """
+    # Keep track of image dtype and return results in the same dtype
+    image_dtype = image.dtype
+
+    # Default window
+    h, w = image.shape[:2]
+
+    # Resize image using bilinear interpolation
+    if scale != 1:
+        image = resize(image, (round(h * scale), round(w * scale)), preserve_range=True)
+
+    if do_padding:
+        image = np.pad(image, padding, mode='constant', constant_values=0)
+
+    return image.astype(image_dtype)
 
 
 def mold_image(image, fHeight, fWidth, do_padding, min_scale=None):
