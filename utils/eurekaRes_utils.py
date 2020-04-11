@@ -3,8 +3,9 @@
 from distutils.version import LooseVersion
 import numpy as np
 import cv2
-# import tensorflow as tf
+import tensorflow as tf
 import skimage.transform
+import skimage.io as io
 
 
 def random_colors(cSize):
@@ -234,3 +235,54 @@ def resize(image, output_shape, order=1, mode='constant', cval=0, clip=True,
             image, output_shape,
             order=order, mode=mode, cval=cval, clip=clip,
             preserve_range=preserve_range)
+
+
+def process_data_mine(data_slice, t_data_dir):
+    """
+    a function to read and mold the input image and return the image with the corresponding label
+    it's slower than tf.image.resize_with_pad
+    """
+
+    # load image
+    img = io.imread(t_data_dir + "/" + data_slice.get('filename'))
+
+    # load the scale and the padding that need for molding the image
+    scale = data_slice.get('scale')
+    padding = data_slice.get('padding')
+    padding = eval('[' + padding + ']')[0]
+
+    # mold image
+    img = fast_mold_image(img, scale, padding, True)
+
+    # set the label
+    label = [data_slice.get('class_label'), data_slice.get('xmin'), data_slice.get('ymin'), data_slice.get('xmax'), data_slice.get('ymax')]
+
+    # return the image and its correspoding label
+    return img, label
+
+
+def process_data2(data_slice, t_data_dir):
+    """
+    a function to read and mold the input image and return the image with the corresponding label
+    """
+
+    # get the image file
+    img = tf.io.read_file(t_data_dir + "/" + data_slice.get('filename'))
+
+    # load the image
+    img = tf.image.decode_jpeg(img, channels=3)
+
+    # mold the image
+    img = tf.image.resize_with_pad(img, 720, 1280)
+
+    # get class "binary" class id
+    class_id = data_slice.get('class_id')
+    class_id = class_id.strip('][').split(' ')
+    class_id = list(map(np.float64, class_id))
+
+
+    # set the label
+    label = class_id + [data_slice.get('xmin'), data_slice.get('ymin'), data_slice.get('xmax'), data_slice.get('ymax')]
+
+    # return the image and its correspoding label
+    return img, label

@@ -199,7 +199,9 @@ def create_ds(ds_name, cats_of_interest, outputFileName=None, outputPath=None, s
 
             # throw each annotation box to df_rows with all the data that correspond to the annotation box
             for inst_box in new_boxes:
-                df_rows = df_rows + [[file_name, str(class_label), str(label_index-1)] + list(map(str, class_label)) +\
+                label = np.concatenate((class_label, inst_box)).astype(np.float64)
+                str_label = " ".join(format(x, ".5f") for x in label)
+                df_rows = df_rows + [[file_name, str_label, str(label_index-1)] + list(map(str, class_label)) +\
                                     list(map(str, inst_box)) + [str(scale), str(padding), str(window)]]
 
             if show_plot:
@@ -243,7 +245,7 @@ def create_ds(ds_name, cats_of_interest, outputFileName=None, outputPath=None, s
     coco = []
 
     # throw the rows to pandas DataFrame object and define the legends of the collumns
-    df = pd.DataFrame(df_rows, columns=["filename", "class_id", "class_label"] + class_digits_label +["xmin", "ymin", "xmax", "ymax", "scale", "padding", "window"])
+    df = pd.DataFrame(df_rows, columns=["filename", "class_label", "class_id"] + class_digits_label +["xmin", "ymin", "xmax", "ymax", "scale", "padding", "window"])
 
     # same the data to a csv file
     df.to_csv(output_save_path)
