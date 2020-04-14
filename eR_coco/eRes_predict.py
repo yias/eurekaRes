@@ -51,14 +51,17 @@ data = pd.read_csv(csv_path, usecols=['filename', 'class_id'])
 
 # isolate the collumn with the file names of the images
 fileNames = data.pop('filename')
+class_ids = data.pop('class_id')
 
 # define the folder containing the data
 data_dir = os.environ["PY_WS"]+"/object_detection/" + "COCO_dataset/" + train_folder_name
 
 
 # get a random image
-img_fname = fileNames[random.randrange(len(fileNames))]
+nb_image = random.randrange(len(fileNames))
+img_fname = fileNames[nb_image]
 img_fname = data_dir + "/" + img_fname
+true_img_label = class_ids[nb_image]
 
 
 # load the image
@@ -76,16 +79,20 @@ img = img.numpy().reshape([-1, image_shape[0], image_shape[1], 3])
 print("loading trained model ... ")
 trained_model = tf.keras.models.load_model(save_path)
 
-print(img.numpy().shape)
+print(img.shape)
 print(image_shape)
 
-redicted_label = trained_model.predict([img])
+predicted_label = trained_model.predict([img])
 
-print(type(redicted_label))
-print(redicted_label)
+print(type(predicted_label))
+print(predicted_label.shape)
+print(predicted_label)
+print(true_img_label)
+print(labels[true_img_label])
 
 
-# fig, ax = plt.subplots(1, figsize=(12, 9))
-# ax.axis("off")
-# ax.imshow(img.numpy().astype('uint8'))
-# plt.show()
+
+fig, ax = plt.subplots(1, figsize=(12, 9))
+ax.axis("off")
+ax.imshow((img[0]*255).astype('uint8'))
+plt.show()
