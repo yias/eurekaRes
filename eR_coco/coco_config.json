@@ -13,5 +13,7 @@
     "max_height": 720,
     "max_width": 1280,
     "do_padding": true,
-    "do_cropping": false
+    "do_cropping": false,
+    "BATCH_SIZE": 3,
+    "NB_EPOCHS": 10
 }
