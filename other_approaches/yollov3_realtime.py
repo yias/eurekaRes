@@ -162,7 +162,9 @@ if __name__ == "__main__":
             tt = zip(*r)
             predicted_labels, scores, bboxes = tt
             print("type predicted_labels", type(predicted_labels))
+            print(predicted_labels)
             print(bboxes)
+            print(type(bboxes))
             # print(tt)
             # predicted_labels, scores, bboxes = r[0]
             # predicted_labels, scores, bboxes = [(x[0], x[1], x[-1]) for x in r]
