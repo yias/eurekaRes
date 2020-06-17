@@ -11,6 +11,7 @@ import numpy as np
 import skimage.io
 import matplotlib
 import matplotlib.pyplot as plt
+import pandas as pd
 
 import pathlib
 import time
@@ -23,7 +24,7 @@ import eurekaRes_utils
 
 
 # Root directory of the project
-ROOT_DIR = os.path.abspath((os.environ["PY_WS"]+"/object_detection/Mask_RCNN/"))
+ROOT_DIR = os.path.abspath((os.environ["PY_WS"]+"/Mask_RCNN/"))
 
 # Import Mask RCNN
 sys.path.insert(0, ROOT_DIR)
@@ -34,7 +35,7 @@ from mrcnn import visualize
 
 # Import COCO config
 sys.path.append(os.path.join(ROOT_DIR, "samples/coco/"))  # To find local version
-sys.path.append(os.environ["PY_WS"] + "/object_detection/coco/PythonAPI")
+sys.path.append(os.environ["PY_WS"] + "/coco/PythonAPI")
 import coco
 
 # Directory to save logs and trained model
@@ -88,7 +89,33 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
 
 dataFolder = str(pathlib.Path().absolute()) + "/../data/"
 vFileName = "gazeRecordings/recording2_world_clean.mp4"
-outVFileName = "gazeRecordings/recording2_world_clean_predict.mp4"
+outVFileName = "gazeRecordings/recording2_world_gaze_predict.mp4"
+gazeFName = "gazeRecordings/recording2.csv"
+csvOutputFile = "gazeRecordings/GazeObjectDataset.csv"
+
+coord_df = pd.read_csv(dataFolder + gazeFName)
+
+# print(coord_df.shape)
+
+gaze_coord = coord_df[['gaze_x', 'gaze_y']].fillna(-1)
+gaze_coord = gaze_coord.to_numpy()
+
+# print(type(gaze_coord))
+# print(gaze_coord.shape)
+# print(gaze_coord[9, :])
+
+# if not np.isnan(gaze_coord[9][0]):
+#     print("is nan")
+for i in range(gaze_coord.shape[0]):
+    if isinstance(gaze_coord[i, 0], str):
+        gaze_coord[i, 0] = float(gaze_coord[i, 0][1:-1])
+        gaze_coord[i, 1] = float(gaze_coord[i, 1][1:-1])
+    # # print(len(gaze_coord[int(i), 0]))
+    # if gaze_coord[i, 0] < 0:
+    #     print(i)
+
+
+# exit()
 
 # create object to capture the frames from an input
 cap = cv2.VideoCapture(dataFolder + vFileName)
@@ -109,6 +136,7 @@ timings = np.array([], dtype=np.float64).reshape(0, 1)
 start_time = time.time()
 frame_counter = 0.0
 clf_threshold = 0.85
+ar = []
 all_time_start = time.time()
 
 while cap.isOpened():
@@ -117,10 +145,8 @@ while cap.isOpened():
         # Capture frame-by-frame
         ret, frame = cap.read()
 
-        
-
         # Run detection
-        results = model.detect([frame], verbose=1)
+        results = model.detect([frame], verbose=0)
 
         # # Visualize results
         r = results[0]
@@ -136,14 +162,39 @@ while cap.isOpened():
         predicted_labels = np.array(predicted_labels)
         predicted_labels = predicted_labels[scores > clf_threshold]
 
-        frame = eurekaRes_utils.draw_boxes(frame, bboxes, color_pallete=Colors)
+        rbg_clr = np.array([], dtype=int).reshape(0, 3)
+        cc = 0
+        for rro in bboxes:
+            if gaze_coord[int(frame_counter), 0] > 0:
+                # print(gaze_coord[int(frame_counter), :], rro, predicted_labels[cc]) 
+                if (gaze_coord[int(frame_counter), 0] >= rro[1]) and (gaze_coord[int(frame_counter), 0] <= rro[3]):
+                    if (gaze_coord[int(frame_counter), 1] >= rro[0]) and (gaze_coord[int(frame_counter), 1] <= rro[2]):
+                        rbg_clr = np.vstack((rbg_clr, np.array([0, 0, 255])))
+                    else:
+                        rbg_clr = np.vstack((rbg_clr, np.array([255, 0, 0])))
+                else:
+                    rbg_clr = np.vstack((rbg_clr, np.array([255, 0, 0])))
+            else:
+                rbg_clr = np.vstack((rbg_clr, np.array([255, 0, 0])))
+            cc += 1
+
+        # box_clrs = np.array(rbg_clr)
+        # print(rbg_clr)
+        frame = eurekaRes_utils.draw_boxes(frame, bboxes, color_pallete=rbg_clr)
         
-        frame = eurekaRes_utils.add_classes_names_to_image(frame, bboxes, predicted_labels, scores, text_colors=Colors)
+        frame = eurekaRes_utils.add_classes_names_to_image(frame, bboxes, predicted_labels, scores, text_colors=rbg_clr)
+
+        if gaze_coord[int(frame_counter), 0] > 0:
+            # print(gaze_coord[int(frame_counter), 0], gaze_coord[int(frame_counter), 1])
+            gzc = (int(gaze_coord[int(frame_counter), 0]), int(gaze_coord[int(frame_counter), 1]))
+            # print(gzc)
+            cv2.circle(frame, (gzc), 20, (0, 0, 255), -5)
 
         # Display the resulting frame
         cv2.imshow('frame', frame)
         timings = np.vstack((timings, time.time()-start_time))
         frame_counter += 1.0
+        ar += [[gaze_coord[int(frame_counter), 0], gaze_coord[int(frame_counter), 1], str(predicted_labels), str(bboxes), str(scores[scores > clf_threshold])]] # 
         # write the flipped frame
         out.write(frame)
         start_time = time.time()
@@ -161,6 +212,13 @@ duration = time.time() - all_time_start
 cap.release()
 out.release()
 cv2.destroyAllWindows()
+
+header = ['gaze_x', 'gaze_y', 'predicted_labels', 'boxes', 'scores']
+# print(ar)
+# print(len(ar))
+# print(len(ar[0]))
+drame = pd.DataFrame(ar, columns=header)
+drame.to_csv(dataFolder + csvOutputFile)
 
 print("fps: ", frame_counter/duration)
 # print(timings)
