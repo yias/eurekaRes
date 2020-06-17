@@ -3,10 +3,6 @@
 # import numpy as np
 import cv2
 
-import eurekaRes_utils
-
-import time
-
 import os
 import sys
 import random
@@ -17,19 +13,28 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 import pathlib
+import time
+# import eurekaRes utilities
+if sys.platform == 'linux':
+    sys.path.append(str(pathlib.Path().absolute()) + "/../utils")
+else:
+    sys.path.append(str(pathlib.Path().absolute()) + "\\..\\utils")
+import eurekaRes_utils
+
 
 # Root directory of the project
-ROOT_DIR = os.path.abspath(str(pathlib.Path().absolute())+"/Mask_RCNN/")
+ROOT_DIR = os.path.abspath((os.environ["PY_WS"]+"/Mask_RCNN/"))
 
 # Import Mask RCNN
 sys.path.insert(0, ROOT_DIR)
+
 from mrcnn import utils
 import mrcnn.model as modellib
 from mrcnn import visualize
 
 # Import COCO config
 sys.path.append(os.path.join(ROOT_DIR, "samples/coco/"))  # To find local version
-sys.path.append(str(pathlib.Path().absolute()) + "/coco/PythonAPI")
+sys.path.append(os.environ["PY_WS"] + "/cocoapi/PythonAPI")
 import coco
 
 # Directory to save logs and trained model
@@ -81,9 +86,11 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
 
 
 
+dataFolder = str(pathlib.Path().absolute()) + "/../data/"
+vFileName = "gazeRecordings/recording2_world_clean.mp4"
 
 # create object to capture the frames from an input
-cap = cv2.VideoCapture(2)
+cap = cv2.VideoCapture(dataFolder + vFileName)
 
 # set the resolution of the frame
 cap.set(3, 1280)
