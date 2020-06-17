@@ -34,8 +34,8 @@ def draw_boxes(image, boxes_coord, color_pallete=None, thickness=2):
         # left = 
         # start_point = (int(boxes_coord[i][1]), int(boxes_coord[i][0]))
         # end_point = (int(boxes_coord[i][3]), int(boxes_coord[i][2]))
-        start_point = (int(boxes_coord[i][0]), int(boxes_coord[i][1]))
-        end_point = (int(boxes_coord[i][2]), int(boxes_coord[i][3]))
+        start_point = (int(boxes_coord[i][1]), int(boxes_coord[i][0]))
+        end_point = (int(boxes_coord[i][3]), int(boxes_coord[i][2]))
         # print("start_point type: ", type(start_point))
         # print(start_point)
         # print(boxes_coord[i][1])
@@ -62,12 +62,13 @@ def add_classes_names_to_image(image, boxes_coord, class_names, scores, text_col
         Colors = text_colors
 
     for i in range(nb_boxes):
-        left = (boxes_coord[i][0] - boxes_coord[i][2]/2.0)*image.shape[1]
-        top = (boxes_coord[i][1] - boxes_coord[i][3]/2.0)*image.shape[0]
-        coordinates = (int(left), int(top))
+        # left = (boxes_coord[i][0] - boxes_coord[i][2]/2.0)*image.shape[1]
+        # top = (boxes_coord[i][1] - boxes_coord[i][3]/2.0)*image.shape[0]
+        coordinates = (int(boxes_coord[i][1]), int(boxes_coord[i][0]))
+        # coordinates = (int(left), int(top))
         # class_id = class_ids[i]
         score = scores[i] if scores is not None else None
-        label = class_names[i].decode('utf8')
+        label = class_names[i]
         txt = "{} {:.3f}".format(label, score) if score else label
 
         image = cv2.putText(image, txt, coordinates, cv2.FONT_HERSHEY_SIMPLEX, font_size, (np.asscalar(Colors[i][0]), np.asscalar(Colors[i][1]), np.asscalar(Colors[i][2])), thickness, cv2.LINE_AA) 

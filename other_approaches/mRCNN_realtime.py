@@ -23,7 +23,7 @@ import eurekaRes_utils
 
 
 # Root directory of the project
-ROOT_DIR = os.path.abspath((os.environ["PY_WS"]+"/Mask_RCNN/"))
+ROOT_DIR = os.path.abspath((os.environ["PY_WS"]+"/object_detection/Mask_RCNN/"))
 
 # Import Mask RCNN
 sys.path.insert(0, ROOT_DIR)
@@ -34,7 +34,7 @@ from mrcnn import visualize
 
 # Import COCO config
 sys.path.append(os.path.join(ROOT_DIR, "samples/coco/"))  # To find local version
-sys.path.append(os.environ["PY_WS"] + "/cocoapi/PythonAPI")
+sys.path.append(os.environ["PY_WS"] + "/object_detection/coco/PythonAPI")
 import coco
 
 # Directory to save logs and trained model
@@ -88,6 +88,7 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
 
 dataFolder = str(pathlib.Path().absolute()) + "/../data/"
 vFileName = "gazeRecordings/recording2_world_clean.mp4"
+outVFileName = "gazeRecordings/recording2_world_clean_predict.mp4"
 
 # create object to capture the frames from an input
 cap = cv2.VideoCapture(dataFolder + vFileName)
@@ -98,7 +99,7 @@ cap.set(4, 720)
 
 # Define the codec and create VideoWriter object
 fourCC = cv2.VideoWriter_fourcc(*'XVID')
-# out = cv2.VideoWriter('data/output.avi', fourCC, 30.0, (1280, 720))
+out = cv2.VideoWriter(dataFolder + outVFileName, fourCC, 10.0, (1280, 720))
 
 cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
@@ -107,16 +108,14 @@ Colors = eurekaRes_utils.random_colors(50)
 timings = np.array([], dtype=np.float64).reshape(0, 1)
 start_time = time.time()
 frame_counter = 0.0
+clf_threshold = 0.85
 all_time_start = time.time()
 
-while True:
+while cap.isOpened():
     try:
 
         # Capture frame-by-frame
         ret, frame = cap.read()
-
-        # write the flipped frame
-        # out.write(frame)
 
         
 
@@ -125,16 +124,28 @@ while True:
 
         # # Visualize results
         r = results[0]
-        
-        
-        frame = eurekaRes_utils.draw_boxes(frame, r['rois'], color_pallete=Colors)
+        bboxes = r['rois']
+        scores = r['scores']
+        bboxes = bboxes[scores > clf_threshold, :]
 
-        frame = eurekaRes_utils.add_classes_names_to_image(frame, r['rois'], r['class_ids'], class_names, r['scores'], text_colors=Colors)
+        predicted_labels = []
+        tt = r['class_ids']
+        for ll in tt:
+            predicted_labels += [class_names[ll]]
+        
+        predicted_labels = np.array(predicted_labels)
+        predicted_labels = predicted_labels[scores > clf_threshold]
+
+        frame = eurekaRes_utils.draw_boxes(frame, bboxes, color_pallete=Colors)
+        
+        frame = eurekaRes_utils.add_classes_names_to_image(frame, bboxes, predicted_labels, scores, text_colors=Colors)
 
         # Display the resulting frame
         cv2.imshow('frame', frame)
         timings = np.vstack((timings, time.time()-start_time))
         frame_counter += 1.0
+        # write the flipped frame
+        out.write(frame)
         start_time = time.time()
         
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -148,11 +159,11 @@ duration = time.time() - all_time_start
 
 # When everything done, release the capture
 cap.release()
-# out.release()
+out.release()
 cv2.destroyAllWindows()
 
 print("fps: ", frame_counter/duration)
-print(timings)
+# print(timings)
 print("average process time: ", np.mean(timings))
 print("std process time: ", np.std(timings))
 
