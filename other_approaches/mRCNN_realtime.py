@@ -193,8 +193,8 @@ while cap.isOpened():
         # Display the resulting frame
         cv2.imshow('frame', frame)
         timings = np.vstack((timings, time.time()-start_time))
-        frame_counter += 1.0
         ar += [[gaze_coord[int(frame_counter), 0], gaze_coord[int(frame_counter), 1], str(predicted_labels), str(bboxes), str(scores[scores > clf_threshold])]] # 
+        frame_counter += 1.0
         # write the flipped frame
         out.write(frame)
         start_time = time.time()
