@@ -88,10 +88,10 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
 
 
 dataFolder = str(pathlib.Path().absolute()) + "/../data/"
-vFileName = "gazeRecordings/recording2_world_clean.mp4"
-outVFileName = "gazeRecordings/recording2_world_gaze_predict.mp4"
-gazeFName = "gazeRecordings/recording2.csv"
-csvOutputFile = "gazeRecordings/GazeObjectDataset.csv"
+vFileName = "gazeRecordings/recording_20200624_1_world_clean.avi"
+outVFileName = "gazeRecordings/20200624_1_world_gaze_objects.mp4"
+gazeFName = "gazeRecordings/recording_20200624_1.csv"
+csvOutputFile = "gazeRecordings/GazeObjectDataset_20200624_1.csv"
 
 coord_df = pd.read_csv(dataFolder + gazeFName)
 
@@ -119,6 +119,7 @@ for i in range(gaze_coord.shape[0]):
 
 # create object to capture the frames from an input
 cap = cv2.VideoCapture(dataFolder + vFileName)
+print(dataFolder + vFileName)
 
 # set the resolution of the frame
 cap.set(3, 1280)
@@ -140,10 +141,14 @@ ar = []
 all_time_start = time.time()
 
 while cap.isOpened():
+    # print('test')
     try:
 
         # Capture frame-by-frame
         ret, frame = cap.read()
+        
+        if not ret:
+            break
 
         # Run detection
         results = model.detect([frame], verbose=0)
@@ -195,6 +200,7 @@ while cap.isOpened():
         timings = np.vstack((timings, time.time()-start_time))
         ar += [[gaze_coord[int(frame_counter), 0], gaze_coord[int(frame_counter), 1], str(predicted_labels), str(bboxes), str(scores[scores > clf_threshold])]] # 
         frame_counter += 1.0
+        print(frame_counter)
         # write the flipped frame
         out.write(frame)
         start_time = time.time()
