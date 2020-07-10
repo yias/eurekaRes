@@ -13,6 +13,13 @@ import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from tensorflow.compat.v1 import ConfigProto
+from tensorflow.compat.v1 import InteractiveSession
+
+configgpu = ConfigProto()
+configgpu.gpu_options.allow_growth = True
+session = InteractiveSession(config=configgpu)
+
 import pathlib
 import time
 # import eurekaRes utilities
@@ -88,10 +95,10 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
 
 
 dataFolder = str(pathlib.Path().absolute()) + "/../data/"
-vFileName = "gazeRecordings/recording_20200624_1_world_clean.avi"
-outVFileName = "gazeRecordings/20200624_1_world_gaze_objects.mp4"
-gazeFName = "gazeRecordings/recording_20200624_1.csv"
-csvOutputFile = "gazeRecordings/GazeObjectDataset_20200624_1.csv"
+vFileName = "gazeRecordings/recording_20200624_4_world_clean.avi"
+outVFileName = "gazeRecordings/20200624_4_world_gaze_objects_t06.mp4"
+gazeFName = "gazeRecordings/recording_20200624_4.csv"
+csvOutputFile = "gazeRecordings/GazeObjectDataset_20200624_4_t06.csv"
 
 coord_df = pd.read_csv(dataFolder + gazeFName)
 
@@ -119,7 +126,7 @@ for i in range(gaze_coord.shape[0]):
 
 # create object to capture the frames from an input
 cap = cv2.VideoCapture(dataFolder + vFileName)
-print(dataFolder + vFileName)
+# print(dataFolder + vFileName)
 
 # set the resolution of the frame
 cap.set(3, 1280)
@@ -136,9 +143,11 @@ Colors = eurekaRes_utils.random_colors(50)
 timings = np.array([], dtype=np.float64).reshape(0, 1)
 start_time = time.time()
 frame_counter = 0.0
-clf_threshold = 0.85
+clf_threshold = 0.6
 ar = []
 all_time_start = time.time()
+
+print('test before staring')
 
 while cap.isOpened():
     # print('test')
