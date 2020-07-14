@@ -298,3 +298,58 @@ def process_data2(data_slice, t_data_dir):
 
     # return the image and its correspoding label
     return img, label
+
+
+def get_cm(boxes_coord):
+    """
+    function to get the center of mass, the length on each dimension of the box and its area 
+    """
+
+    # number of boxes
+    nb_boxes = boxes_coord.shape[0]
+
+    # the center of mass
+    mass_center = np.array([]).reshape((0, 2))
+
+    # area of the boxes
+    bx_area = np.array([])
+
+    # the length of each dimension
+    dims_size = np.array([]).reshape((0, 2))
+
+    for i in range(nb_boxes):
+        mass_center = np.vstack([mass_center, np.array([(boxes_coord[i][1] + boxes_coord[i][3])/2, boxes_coord[i][2]])])
+        dims_size = np.vstack([dims_size, np.array([boxes_coord[i][3] - boxes_coord[i][1], boxes_coord[i][2] - boxes_coord[i][0]])])
+        bx_area = np.hstack([bx_area, dims_size[i, 0] * dims_size[i, 1]])
+        # start_point = (int(boxes_coord[i][1]), int(boxes_coord[i][0]))
+        # end_point = (int(boxes_coord[i][3]), int(boxes_coord[i][2]))
+        # print('start point: ', start_point)
+        # print('end point: ', end_point)
+        # print('center of mass: ', mass_center[i])
+        # print('dimensions: ', dims_size[i])
+        # print('area: ', bx_area[i])
+    
+    return mass_center, dims_size, bx_area
+
+
+def display_real_coord(image, boxes_coord, real_coord, text_colors=None, thickness=2, font_size=0.7):
+    """
+    function to write text on an image
+    """
+
+    nb_boxes = boxes_coord.shape[0]
+
+    if text_colors is None:
+        Colors = random_colors(nb_boxes)
+    else:
+        Colors = text_colors
+
+    for i in range(nb_boxes):
+        coordinates = (int(boxes_coord[i][1] - 20), int(boxes_coord[i][2] + 15))
+        # coordinates = (int(left), int(top))
+        # class_id = class_ids[i]
+        txt = "({:.3f}, {:.3f})".format(real_coord[i, 0], real_coord[i, 1])
+
+        image = cv2.putText(image, txt, coordinates, cv2.FONT_HERSHEY_SIMPLEX, font_size, (np.asscalar(Colors[i][0]), np.asscalar(Colors[i][1]), np.asscalar(Colors[i][2])), thickness, cv2.LINE_AA) 
+
+    return image
