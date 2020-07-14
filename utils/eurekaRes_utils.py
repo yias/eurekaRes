@@ -328,7 +328,7 @@ def get_cm(boxes_coord):
         # print('center of mass: ', mass_center[i])
         # print('dimensions: ', dims_size[i])
         # print('area: ', bx_area[i])
-    
+
     return mass_center, dims_size, bx_area
 
 

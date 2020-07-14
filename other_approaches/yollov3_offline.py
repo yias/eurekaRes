@@ -75,7 +75,8 @@ if __name__ == "__main__":
 
     # load the network and the labels
     # net = darknet.load_net((yollo_DIR + '/cfg/yolov3-tiny.cfg').encode('utf8'), (yollo_DIR + '/cfg/yolov3-tiny.weights').encode('utf8'), 0)
-    net = darknet.load_net((os.environ["DARKNET_DIR"] + '/cfg/yolov3.cfg').encode('utf8'), (os.environ["DARKNET_DIR"] + '/cfg/yolov3.weights').encode('utf8'), 0)
+    net = darknet.load_net((os.environ["DARKNET_DIR"] + '/cfg/yolov3-tiny.cfg').encode('utf8'), (os.environ["DARKNET_DIR"] + '/cfg/yolov3-tiny.weights').encode('utf8'), 0)
+    # net = darknet.load_net((os.environ["DARKNET_DIR"] + '/cfg/yolov3.cfg').encode('utf8'), (os.environ["DARKNET_DIR"] + '/cfg/yolov3.weights').encode('utf8'), 0)
     meta = darknet.load_meta((os.environ["DARKNET_DIR"] + '/cfg/coco.data').encode('utf8'))
 
     dataFolder = str(pathlib.Path().absolute()) + "/../data/"
@@ -85,7 +86,7 @@ if __name__ == "__main__":
     # create object to capture the frames from an input
     cap = cv2.VideoCapture(dataFolder + vFileName)
 
-    clf_threshold = 0.8
+    clf_threshold = 0.3
 
     # set the resolution of the frame
     # cap.set(3, 1280)
@@ -106,15 +107,16 @@ if __name__ == "__main__":
 
             # Capture frame-by-frame
             ret, frame = cap.read()
-
+            print("ret: ", ret)
             if ret == True:
 
                 # write the flipped frame
                 # out.write(frame)
 
                 # get the object-detection results from darknet
+                print("test")
                 r = darknet.darknet_detect(net, meta, frame)
-                # print(r)
+                print(r)
                 # print(len(r))
 
                 tt = zip(*r)
@@ -126,7 +128,7 @@ if __name__ == "__main__":
                 bboxes = bboxes[scores > clf_threshold, :]
                 print("shape predicted_labels", predicted_labels.shape)
                 print(predicted_labels)
-                
+
                 print("shape bboxes", bboxes.shape)
                 print("boxes: ", bboxes)
                 print("shape scores", scores.shape)
@@ -138,7 +140,7 @@ if __name__ == "__main__":
                 frame = eResU.add_classes_names_to_image(frame, bboxes, predicted_labels, scores, text_colors=Colors)
 
                 # # Display the resulting frame
-            
+
                 cv2.imshow('frame', frame)
                 timings = np.vstack((timings, time.time()-start_time))
                 frame_counter += 1.0

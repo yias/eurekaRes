@@ -94,19 +94,21 @@ def CameraToWorld(in_camera_coord, rgbImage):
 
         # scaling factor
         k = P[2]
-        print("k: ", k)
+        # print("k: ", k)
         x_world = P[0]/ k
         y_world = P[1]/ k
         real_world_coord = P[0:2]
         # print("real_world_coord: ", real_world_coord)
         real_world_coord[0] = real_world_coord[0] / k
         real_world_coord[1] = real_world_coord[1] / k
+
         # print("x_world type: ", type(x_world))
         # print("x_world shape: ", x_world.shape)
         # print("y_world type: ", type(y_world))
         # print("y_world type: ", y_world.shape)
+        real_world_coord = np.flip(real_world_coord.transpose(), 1)
         check = True
-        return real_world_coord.transpose(), check
+        return real_world_coord, check
 
     else:
 

@@ -133,11 +133,15 @@ def classify(net, meta, im):
     return res
 
 def detect(net, meta, image, thresh=.5, hier_thresh=.5, nms=.45):
+    
     im = load_image(image, 0, 0)
     num = ctypes.c_int(0)
     pnum = ctypes.pointer(num)
+    print('t1')
     predict_image(net, im)
+    print('t2')
     dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, None, 0, pnum)
+    print('t3')
     num = pnum[0]
     if (nms): do_nms_obj(dets, num, meta.classes, nms)
 
@@ -187,16 +191,16 @@ def darknet_detect(trained_net, img_meta, image, thresh=.1, hier_thresh=.1, nms=
     # define a pointer for transfering the results of the detection
     num = ctypes.c_int(0)
     pnum = ctypes.pointer(num)
-
+    print('t0')
     # get the detected objects and their bounded boxes
     dets = get_network_boxes(trained_net, im.w, im.h, thresh, hier_thresh, None, 0, pnum)
-
+    print('t1')
     # get the pointer of the detection results
     num = pnum[0]
     if nms:
         # if the pointer is not Null (empty), get the names of the labels
         do_nms_obj(dets, num, img_meta.classes, nms)
-
+    print('t1.5')
     # get the results sorted according to their highest probability
     res = []
     for j in range(num):
@@ -205,19 +209,21 @@ def darknet_detect(trained_net, img_meta, image, thresh=.1, hier_thresh=.1, nms=
                 b = dets[j].bbox
                 res.append((img_meta.names[i], dets[j].prob[i], (b.x, b.y, b.w, b.h)))
     res = sorted(res, key=lambda x: -x[1])
-
+    print(res)
+    print('t2')
     # deallocate the memory
-    free_image(im)
+    # free_image(im)
+    print('t3')
     free_detections(dets, num)
-
+    print('t4')
     return res
 
-    
+
 if __name__ == "__main__":
 
-    darknet_img_shape = (416,416)
-    # net = load_net((os.environ["DARKNET_DIR"] + '/cfg/yolov3-tiny.cfg').encode('utf8'), (os.environ["DARKNET_DIR"] +  '/cfg/yolov3-tiny.weights').encode('utf8'), 0)
-    net = load_net((os.environ["DARKNET_DIR"] + '/cfg/yolov3.cfg').encode('utf8'), (os.environ["DARKNET_DIR"] +  '/cfg/yolov3.weights').encode('utf8'), 0)
+    darknet_img_shape = (416, 416)
+    net = load_net((os.environ["DARKNET_DIR"] + '/cfg/yolov3-tiny.cfg').encode('utf8'), (os.environ["DARKNET_DIR"] +  '/cfg/yolov3-tiny.weights').encode('utf8'), 0)
+    # net = load_net((os.environ["DARKNET_DIR"] + '/cfg/yolov3.cfg').encode('utf8'), (os.environ["DARKNET_DIR"] +  '/cfg/yolov3.weights').encode('utf8'), 0)
     meta = load_meta((os.environ["DARKNET_DIR"] + '/cfg/coco.data').encode('utf8'))
     r = detect(net, meta, (os.environ["DARKNET_DIR"] + '/data/dog.jpg').encode('utf8'))
     print(r)
@@ -230,39 +236,45 @@ if __name__ == "__main__":
 
     # scale_factor_x = (img.w - 1)/(darknet_img_shape[0] - 1)
     # scale_factor_y = (img.h - 1)/(darknet_img_shape[1] - 1)
-    
+
     D = img.w * img.h * img.c
     tmp = np.empty((D,), dtype=np.float32)
     ctypes.memmove(tmp.ctypes.data, img.data, D*np.dtype(np.float32).itemsize)
-    
+
     tmp = np.reshape(tmp, (img.c, img.h, img.w))*255.0
     tmp = np.moveaxis(tmp, 0, -1)
-    
+
     # display the image with its annotations
     fig, ax = plt.subplots(1, figsize=(12, 9))
     ax.axis("off")
     ax.imshow(tmp.astype(np.uint8))
 
-    colors = np.random.rand(len(r),3)
+    colors = np.random.rand(len(r), 3)
     counter = 0
     # For each instance in the picture, create a rectangle patch and add it to the axes
     for inst in r:
         x, y, off_x, off_y = inst[2]
+        ll, bb, rr, tt = inst[2]
         # print(img.w, img.h)
         # left  = (x-off_x/2.)*img.w
         # right = (x+off_x/2.)*img.w
         # top   = (y-off_y/2.)*img.h
         # bot   = (y+off_y/2.)*img.h
-        left  = x*608/img.w
-        right = off_x*608/img.w
-        top   = y*608/img.h
-        bot   = off_y*608/img.h
-        
+        left = x * 416 / img.w
+        right = off_x * 416 / img.w
+        top = off_y * 416 / img.h
+        bot = y * 416 / img.h
+        # left = img.h - (x * img.w / 416)
+        # right = img.h - (off_x * img.w / 416)
+        # top = img.w - (y * img.h / 416)
+        # bot = img.w - (off_y * img.h / 416)
+
         print(left, right, top, bot)
         # x = img.h - x
         # rect = patches.Rectangle((x, y), off_x, off_y, linewidth=1, edgecolor=colors[counter], facecolor='none')
-        rect = patches.Rectangle((x-70, y-70), off_x, off_y, linewidth=1, edgecolor=colors[counter], facecolor='none')
-        ax.text(left, top, inst[0].decode("utf-8") , fontdict={'color': colors[counter], 'size': 12, 'weight': 'bold'})
+        # ax.text(x, y, inst[0].decode("utf-8"), fontdict={'color': colors[counter], 'size': 12, 'weight': 'bold'})
+        rect = patches.Rectangle((x - (off_x/2), y - (off_y/2)), off_x, off_y, linewidth=1, edgecolor=colors[counter], facecolor='none')
+        ax.text(x - (off_x/2), y - (off_y/2), inst[0].decode("utf-8"), fontdict={'color': colors[counter], 'size': 12, 'weight': 'bold'})
         ax.add_patch(rect)
         counter += 1 
 
