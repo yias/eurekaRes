@@ -80,13 +80,15 @@ if __name__ == "__main__":
     meta = darknet.load_meta((os.environ["DARKNET_DIR"] + '/cfg/coco.data').encode('utf8'))
 
     dataFolder = str(pathlib.Path().absolute()) + "/../data/"
-    vFileName = "gazeRecordings/recording2_world_clean.mp4"
+    vFileName = "gazeRecordings/recording_20200624_1_world_clean.avi"
 
-    outVFileName = "gazeRecordings/recording2_world_clean_predict.mp4"
+    outVFileName = "gazeRecordings/20200624_1_world_gaze_objects_yollo_tiny.mp4"
     # create object to capture the frames from an input
     cap = cv2.VideoCapture(dataFolder + vFileName)
+    fourCC = cv2.VideoWriter_fourcc(*'XVID')
+    out = cv2.VideoWriter(dataFolder + outVFileName, fourCC, 10.0, (1280, 720))
 
-    clf_threshold = 0.3
+    clf_threshold = 0.2
 
     # set the resolution of the frame
     # cap.set(3, 1280)
@@ -107,41 +109,39 @@ if __name__ == "__main__":
 
             # Capture frame-by-frame
             ret, frame = cap.read()
-            print("ret: ", ret)
             if ret == True:
 
                 # write the flipped frame
                 # out.write(frame)
 
                 # get the object-detection results from darknet
-                print("test")
                 r = darknet.darknet_detect(net, meta, frame)
-                print(r)
                 # print(len(r))
+                if r:
+                    tt = zip(*r)
+                    predicted_labels, scores, bboxes = tt
+                    predicted_labels = np.asarray(predicted_labels)
+                    scores = np.asarray(scores)
+                    predicted_labels = predicted_labels[scores > clf_threshold]
+                    bboxes = np.asarray(bboxes)
+                    bboxes = bboxes[scores > clf_threshold, :]
+                    print("shape predicted_labels", predicted_labels.shape)
+                    print(predicted_labels)
 
-                tt = zip(*r)
-                predicted_labels, scores, bboxes = tt
-                predicted_labels = np.asarray(predicted_labels)
-                scores = np.asarray(scores)
-                predicted_labels = predicted_labels[scores > clf_threshold]
-                bboxes = np.asarray(bboxes)
-                bboxes = bboxes[scores > clf_threshold, :]
-                print("shape predicted_labels", predicted_labels.shape)
-                print(predicted_labels)
+                    print("shape bboxes", bboxes.shape)
+                    print("boxes: ", bboxes)
+                    print("shape scores", scores.shape)
+                    print(scores)
+                    print(frame.shape)
+                    bboxes = eResU.process_bboxes(bboxes)
+                    frame = eResU.draw_boxes(frame, bboxes, color_pallete=Colors)
 
-                print("shape bboxes", bboxes.shape)
-                print("boxes: ", bboxes)
-                print("shape scores", scores.shape)
-                print(scores)
-                print(frame.shape)
-
-                # frame = eResU.draw_boxes(frame, bboxes, color_pallete=Colors)
-
-                frame = eResU.add_classes_names_to_image(frame, bboxes, predicted_labels, scores, text_colors=Colors)
+                    frame = eResU.add_classes_names_to_image(frame, bboxes, predicted_labels, scores, text_colors=Colors)
 
                 # # Display the resulting frame
 
                 cv2.imshow('frame', frame)
+                out.write(frame)
                 timings = np.vstack((timings, time.time()-start_time))
                 frame_counter += 1.0
                 start_time = time.time()

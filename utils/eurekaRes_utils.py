@@ -353,3 +353,26 @@ def display_real_coord(image, boxes_coord, real_coord, text_colors=None, thickne
         image = cv2.putText(image, txt, coordinates, cv2.FONT_HERSHEY_SIMPLEX, font_size, (np.asscalar(Colors[i][0]), np.asscalar(Colors[i][1]), np.asscalar(Colors[i][2])), thickness, cv2.LINE_AA) 
 
     return image
+
+
+def process_bboxes(bboxes):
+    """
+    function to compute the proper x and y of the bounding box
+    """
+    # print(type(bboxes))
+    bboxes[:, 0] = bboxes[:, 0] - (bboxes[:, 2]/2)
+    bboxes[:, 1] = bboxes[:, 1] - (bboxes[:, 3]/2)
+    bboxes[:, 2] = bboxes[:, 2] + bboxes[:, 0]
+    bboxes[:, 3] = bboxes[:, 3] + bboxes[:, 1]
+    bboxes[:, [0, 1]] = bboxes[:, [1, 0]]
+    bboxes[:, [2, 3]] = bboxes[:, [3, 2]]
+    # bboxes[:, [0, 1]] = bboxes[:, [1, 0]]
+    # print(bboxes.shape)
+    # ttp = np.array([]).reshape(bboxes.shape)
+    # print(ttp.shape)
+    # ttp[:, 0] = bboxes[:, 1]
+    # ttp[:, 1] = bboxes[:, 0]
+    # ttp[:, 2] = bboxes[:, 3]
+    # ttp[:, 3] = bboxes[:, 2]
+
+    return bboxes

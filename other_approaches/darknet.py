@@ -191,31 +191,30 @@ def darknet_detect(trained_net, img_meta, image, thresh=.1, hier_thresh=.1, nms=
     # define a pointer for transfering the results of the detection
     num = ctypes.c_int(0)
     pnum = ctypes.pointer(num)
-    print('t0')
+
     # get the detected objects and their bounded boxes
     dets = get_network_boxes(trained_net, im.w, im.h, thresh, hier_thresh, None, 0, pnum)
-    print('t1')
+
     # get the pointer of the detection results
     num = pnum[0]
     if nms:
         # if the pointer is not Null (empty), get the names of the labels
         do_nms_obj(dets, num, img_meta.classes, nms)
-    print('t1.5')
+
     # get the results sorted according to their highest probability
     res = []
     for j in range(num):
         for i in range(img_meta.classes):
             if dets[j].prob[i] > 0:
                 b = dets[j].bbox
-                res.append((img_meta.names[i], dets[j].prob[i], (b.x, b.y, b.w, b.h)))
+                res.append((img_meta.names[i].decode('utf8'), dets[j].prob[i], (b.x, b.y, b.w, b.h)))
     res = sorted(res, key=lambda x: -x[1])
-    print(res)
-    print('t2')
+    
     # deallocate the memory
     # free_image(im)
-    print('t3')
+    
     free_detections(dets, num)
-    print('t4')
+
     return res
 
 
