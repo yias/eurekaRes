@@ -182,96 +182,96 @@ while cap.isOpened():
             break
 
         # Run detection
-        results = model.detect([frame], verbose=0)
+        # results = model.detect([frame], verbose=0)
 
-        # # Visualize results
-        r = results[0]
-        bboxes = r['rois']
-        scores = r['scores']
-        bboxes = bboxes[scores > clf_threshold, :]
+        # # # Visualize results
+        # r = results[0]
+        # bboxes = r['rois']
+        # scores = r['scores']
+        # bboxes = bboxes[scores > clf_threshold, :]
 
-        predicted_labels = []
-        tt = r['class_ids']
-        for ll in tt:
-            predicted_labels += [class_names[ll]]
+        # predicted_labels = []
+        # tt = r['class_ids']
+        # for ll in tt:
+        #     predicted_labels += [class_names[ll]]
 
-        predicted_labels = np.array(predicted_labels)
-        predicted_labels = predicted_labels[scores > clf_threshold]
-        scores = scores[scores > clf_threshold]
+        # predicted_labels = np.array(predicted_labels)
+        # predicted_labels = predicted_labels[scores > clf_threshold]
+        # scores = scores[scores > clf_threshold]
         
-        cm_bxs, size_bxs, bx_area = eurekaRes_utils.get_cm(bboxes)
-        bboxes = bboxes[bx_area < area_threshold, :]
-        predicted_labels = predicted_labels[bx_area < area_threshold]
-        cm_bxs = cm_bxs[bx_area < area_threshold, :]
-        # print("cm_bxs.shape: ", cm_bxs.shape)
-        size_bxs = size_bxs[bx_area < area_threshold, :]
+        # cm_bxs, size_bxs, bx_area = eurekaRes_utils.get_cm(bboxes)
+        # bboxes = bboxes[bx_area < area_threshold, :]
+        # predicted_labels = predicted_labels[bx_area < area_threshold]
+        # cm_bxs = cm_bxs[bx_area < area_threshold, :]
+        # # print("cm_bxs.shape: ", cm_bxs.shape)
+        # size_bxs = size_bxs[bx_area < area_threshold, :]
         
 
-        if valid_frame_counter < frame_history_length:
-            if bboxes.any():
-                bboxes_history += [bboxes]
-                cm_history += [cm_bxs]
-                prediction_history += [predicted_labels]
-                score_history += [scores]
-                valid_frame_counter += 1
-        else:
-            if bboxes.any():
-                bboxes_history += [bboxes]
-                cm_history += [cm_bxs]
-                prediction_history += [predicted_labels]
-                score_history += [scores]
-                bboxes, cm_bxs, predicted_labels, scores = eurekaRes_utils.average_prediction(bboxes_history, cm_history, prediction_history, score_history, aacm=area_around_cm, clThr=clf_threshold)
-                del bboxes_history[0]
-                del prediction_history[0]
-                del cm_history[0]
-                del score_history[0]
+        # if valid_frame_counter < frame_history_length:
+        #     if bboxes.any():
+        #         bboxes_history += [bboxes]
+        #         cm_history += [cm_bxs]
+        #         prediction_history += [predicted_labels]
+        #         score_history += [scores]
+        #         valid_frame_counter += 1
+        # else:
+        #     if bboxes.any():
+        #         bboxes_history += [bboxes]
+        #         cm_history += [cm_bxs]
+        #         prediction_history += [predicted_labels]
+        #         score_history += [scores]
+        #         bboxes, cm_bxs, predicted_labels, scores = eurekaRes_utils.average_prediction(bboxes_history, cm_history, prediction_history, score_history, aacm=area_around_cm, clThr=clf_threshold)
+        #         del bboxes_history[0]
+        #         del prediction_history[0]
+        #         del cm_history[0]
+        #         del score_history[0]
 
-            realWorld_coord, rwc_check = CameraToWorld(cm_bxs, frame)
-            print("real world coord: ", realWorld_coord)
-            rbg_clr = np.array([], dtype=int).reshape(0, 3)
-            cc = 0
-            for rro in bboxes:
-                if gaze_coord[int(frame_counter), 0] > 0:
-                    # print(gaze_coord[int(frame_counter), :], rro, predicted_labels[cc]) 
-                    if (gaze_coord[int(frame_counter), 0] >= rro[1]) and (gaze_coord[int(frame_counter), 0] <= rro[3]):
-                        if (gaze_coord[int(frame_counter), 1] >= rro[0]) and (gaze_coord[int(frame_counter), 1] <= rro[2]):
-                            rbg_clr = np.vstack((rbg_clr, np.array([0, 0, 255])))
-                        else:
-                            rbg_clr = np.vstack((rbg_clr, np.array([255, 0, 0])))
-                    else:
-                        rbg_clr = np.vstack((rbg_clr, np.array([255, 0, 0])))
-                else:
-                    rbg_clr = np.vstack((rbg_clr, np.array([255, 0, 0])))
-                cc += 1
+        #     realWorld_coord, rwc_check = CameraToWorld(cm_bxs, frame)
+        #     print("real world coord: ", realWorld_coord)
+        #     rbg_clr = np.array([], dtype=int).reshape(0, 3)
+        #     cc = 0
+        #     for rro in bboxes:
+        #         if gaze_coord[int(frame_counter), 0] > 0:
+        #             # print(gaze_coord[int(frame_counter), :], rro, predicted_labels[cc]) 
+        #             if (gaze_coord[int(frame_counter), 0] >= rro[1]) and (gaze_coord[int(frame_counter), 0] <= rro[3]):
+        #                 if (gaze_coord[int(frame_counter), 1] >= rro[0]) and (gaze_coord[int(frame_counter), 1] <= rro[2]):
+        #                     rbg_clr = np.vstack((rbg_clr, np.array([0, 0, 255])))
+        #                 else:
+        #                     rbg_clr = np.vstack((rbg_clr, np.array([255, 0, 0])))
+        #             else:
+        #                 rbg_clr = np.vstack((rbg_clr, np.array([255, 0, 0])))
+        #         else:
+        #             rbg_clr = np.vstack((rbg_clr, np.array([255, 0, 0])))
+        #         cc += 1
 
             
-            frame = eurekaRes_utils.draw_boxes(frame, bboxes, color_pallete=rbg_clr)
+            # frame = eurekaRes_utils.draw_boxes(frame, bboxes, color_pallete=rbg_clr)
             
-            frame = eurekaRes_utils.add_classes_names_to_image(frame, bboxes, predicted_labels, scores, text_colors=rbg_clr)
+            # frame = eurekaRes_utils.add_classes_names_to_image(frame, bboxes, predicted_labels, scores, text_colors=rbg_clr)
             
-            if rwc_check:
-                frame = eurekaRes_utils.display_real_coord(frame, bboxes, realWorld_coord, text_colors=rbg_clr)
+            # if rwc_check:
+            #     frame = eurekaRes_utils.display_real_coord(frame, bboxes, realWorld_coord, text_colors=rbg_clr)
                 # for kk in cm_bxs:
                 #    cv2.circle(frame, (int(kk[0]), int(kk[1])), 10, (0, 255, 0), -5)
 
-        if gaze_coord[int(frame_counter), 0] > 0:
-            # print(gaze_coord[int(frame_counter), 0], gaze_coord[int(frame_counter), 1])
-            gzc = (int(gaze_coord[int(frame_counter), 0]), int(gaze_coord[int(frame_counter), 1]))
-            # print(gzc)
-            cv2.circle(frame, (gzc), 20, (0, 0, 255), -5)
+        # if gaze_coord[int(frame_counter), 0] > 0:
+        #     # print(gaze_coord[int(frame_counter), 0], gaze_coord[int(frame_counter), 1])
+        #     gzc = (int(gaze_coord[int(frame_counter), 0]), int(gaze_coord[int(frame_counter), 1]))
+        #     # print(gzc)
+        #     cv2.circle(frame, (gzc), 20, (0, 0, 255), -5)
 
-        # Display the resulting frame
-        # cv2.imshow('frame', frame)
-        timings = np.vstack((timings, time.time()-start_time))
-        ar += [[gaze_coord[int(frame_counter), 0], gaze_coord[int(frame_counter), 1], str(predicted_labels), str(bboxes), str(scores[scores > clf_threshold])]] # 
-        frame_counter += 1.0
-        print(frame_counter)
-        # write the flipped frame
-        out.write(frame)
-        start_time = time.time()
+        # # Display the resulting frame
+        # # cv2.imshow('frame', frame)
+        # timings = np.vstack((timings, time.time()-start_time))
+        # ar += [[gaze_coord[int(frame_counter), 0], gaze_coord[int(frame_counter), 1], str(predicted_labels), str(bboxes), str(scores[scores > clf_threshold])]] # 
+        # frame_counter += 1.0
+        # print(frame_counter)
+        # # write the flipped frame
+        # out.write(frame)
+        # start_time = time.time()
         
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+        # if cv2.waitKey(1) & 0xFF == ord('q'):
+        #     break
         
         # visualize.display_instances(frame, r['rois'], r['masks'], r['class_ids'], class_names, r['scores'])
     except KeyboardInterrupt:
