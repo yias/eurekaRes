@@ -182,7 +182,7 @@ while cap.isOpened():
             break
 
         # Run detection
-        # results = model.detect([frame], verbose=0)
+        results = model.detect([frame], verbose=0)
 
         # # # Visualize results
         # r = results[0]
@@ -262,9 +262,9 @@ while cap.isOpened():
 
         # # Display the resulting frame
         # # cv2.imshow('frame', frame)
-        # timings = np.vstack((timings, time.time()-start_time))
+        timings = np.vstack((timings, time.time()-start_time))
         # ar += [[gaze_coord[int(frame_counter), 0], gaze_coord[int(frame_counter), 1], str(predicted_labels), str(bboxes), str(scores[scores > clf_threshold])]] # 
-        # frame_counter += 1.0
+        frame_counter += 1.0
         # print(frame_counter)
         # # write the flipped frame
         # out.write(frame)
@@ -288,8 +288,8 @@ header = ['gaze_x', 'gaze_y', 'predicted_labels', 'boxes', 'scores']
 # print(ar)
 # print(len(ar))
 # print(len(ar[0]))
-drame = pd.DataFrame(ar, columns=header)
-drame.to_csv(dataFolder + csvOutputFile)
+# drame = pd.DataFrame(ar, columns=header)
+# drame.to_csv(dataFolder + csvOutputFile)
 
 print("fps: ", frame_counter/duration)
 # print(timings)
