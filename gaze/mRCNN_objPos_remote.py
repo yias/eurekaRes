@@ -265,7 +265,7 @@ while cap.isOpened():
         timings = np.vstack((timings, time.time()-start_time))
         # ar += [[gaze_coord[int(frame_counter), 0], gaze_coord[int(frame_counter), 1], str(predicted_labels), str(bboxes), str(scores[scores > clf_threshold])]] # 
         frame_counter += 1.0
-        # print(frame_counter)
+        print(frame_counter)
         # # write the flipped frame
         # out.write(frame)
         # start_time = time.time()
