@@ -198,14 +198,14 @@ while cap.isOpened():
         # predicted_labels = np.array(predicted_labels)
         # predicted_labels = predicted_labels[scores > clf_threshold]
         # scores = scores[scores > clf_threshold]
-        
+
         # cm_bxs, size_bxs, bx_area = eurekaRes_utils.get_cm(bboxes)
         # bboxes = bboxes[bx_area < area_threshold, :]
         # predicted_labels = predicted_labels[bx_area < area_threshold]
         # cm_bxs = cm_bxs[bx_area < area_threshold, :]
         # # print("cm_bxs.shape: ", cm_bxs.shape)
         # size_bxs = size_bxs[bx_area < area_threshold, :]
-        
+
 
         # if valid_frame_counter < frame_history_length:
         #     if bboxes.any():
@@ -268,7 +268,7 @@ while cap.isOpened():
         print(frame_counter)
         # # write the flipped frame
         # out.write(frame)
-        # start_time = time.time()
+        start_time = time.time()
         
         # if cv2.waitKey(1) & 0xFF == ord('q'):
         #     break
@@ -293,6 +293,21 @@ header = ['gaze_x', 'gaze_y', 'predicted_labels', 'boxes', 'scores']
 
 print("fps: ", frame_counter/duration)
 # print(timings)
-print("average process time: ", np.mean(timings))
-print("std process time: ", np.std(timings))
+print("average process time: ", np.mean(timings[1:]))
+print("std process time: ", np.std(timings[1:]))
 
+fig, ax = plt.subplots()
+
+ax.plot(timings)
+ax.set_title('detection time')
+ax.set_xlabel('frame')
+ax.set_ylabel('time [s]')
+plt.savefig(dataFolder + 'detection_time.png', dpi=300)
+
+fig2, ax2 = plt.subplots()
+ax2.plot(timings[1:])
+ax2.set_title('detection time')
+ax2.set_xlabel('frame')
+ax2.set_ylabel('time [s]')
+plt.savefig(dataFolder + 'detection_time2.png', dpi=300)
+# plt.show()
