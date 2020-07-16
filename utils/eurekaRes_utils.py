@@ -376,3 +376,53 @@ def process_bboxes(bboxes):
     # ttp[:, 3] = bboxes[:, 2]
 
     return bboxes
+
+def average_prediction(bboxes, massCenter, p_labels, scores, aacm=500, clThr=0.6):
+    """
+    function to compute the average prediction of the labels, scores, and bounding boxes
+
+    aacm: radius around the center of mass to check
+    """
+
+    cm_ref = massCenter[-1]
+    r_bboxes = np.array([]).reshape(0, bboxes[0].shape[1])
+    r_cm = np.array([]).reshape(0, massCenter[0].shape[1])
+    r_labels = []
+    r_scores = np.array([])
+
+    cm_counter = 0
+    for cm in cm_ref:
+        tmp_cm = np.array([]).reshape((0, cm.shape[0]))
+        # tmp_label = []
+        tmp_bboxes = np.array([]).reshape((0, bboxes[0].shape[1]))
+        tmp_score = np.array([])
+        for i in range(len(massCenter)-1):
+            for j in range(massCenter[i].shape[0]):
+                if np.linalg.norm(cm - massCenter[i][j], 2) < aacm:
+                    if p_labels[-1][cm_counter] == p_labels[i][j]:
+                        tmp_cm = np.vstack([tmp_cm, massCenter[i][j]])
+                        # tmp_label += [p_labels[-1][cm_counter]]
+                        tmp_bboxes = np.vstack([tmp_bboxes, bboxes[i][j]])
+                        tmp_score = np.hstack([tmp_score, scores[i][j]])
+        if tmp_cm.any():
+            tmp_cm = np.vstack([tmp_cm, cm])
+            m_cm = np.mean(tmp_cm, axis=0)
+            r_cm = np.vstack([r_cm, m_cm])
+            tmp_bboxes = np.vstack([tmp_bboxes, bboxes[-1][cm_counter]])
+            m_bboxes = np.mean(tmp_bboxes, axis=0)
+            r_bboxes = np.vstack([r_bboxes, m_bboxes])
+            tmp_score = np.hstack([tmp_score, scores[-1][cm_counter]])
+            m_score = np.mean(tmp_score)
+            r_scores = np.hstack([r_scores, m_score])
+            r_labels += [p_labels[-1][cm_counter]]
+
+        cm_counter += 1
+
+    r_bboxes = r_bboxes[r_scores > clThr, :]
+    r_cm = r_cm[r_scores > clThr, :]
+    r_labels = np.array(r_labels)
+    r_labels = r_labels[r_scores > clThr]
+    r_scores = r_scores[r_scores > clThr]
+
+    return r_bboxes, r_cm, r_labels, r_scores
+

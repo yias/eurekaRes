@@ -198,14 +198,14 @@ while cap.isOpened():
         predicted_labels = np.array(predicted_labels)
         predicted_labels = predicted_labels[scores > clf_threshold]
         scores = scores[scores > clf_threshold]
-        
+
         cm_bxs, size_bxs, bx_area = eurekaRes_utils.get_cm(bboxes)
         bboxes = bboxes[bx_area < area_threshold, :]
         predicted_labels = predicted_labels[bx_area < area_threshold]
         cm_bxs = cm_bxs[bx_area < area_threshold, :]
         # print("cm_bxs.shape: ", cm_bxs.shape)
         size_bxs = size_bxs[bx_area < area_threshold, :]
-        
+
 
         if valid_frame_counter < frame_history_length:
             if bboxes.any():

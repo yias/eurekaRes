@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
             # Capture frame-by-frame
             ret, frame = cap.read()
-            if ret == True:
+            if ret:
 
                 # write the flipped frame
                 # out.write(frame)
@@ -145,7 +145,9 @@ if __name__ == "__main__":
                 timings = np.vstack((timings, time.time()-start_time))
                 frame_counter += 1.0
                 start_time = time.time()
-            
+            else:
+                break
+
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
             
