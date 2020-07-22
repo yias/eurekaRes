@@ -165,6 +165,7 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
 
 # initialize socketStream
 sockHndlr = socketStream.socketStream(svrIP="128.178.145.17", socketStreamMode=1)
+sockHndlr.setBufferSize(128)
 sockHndlr.initialize_msgStruct(["labels", "bboxes", "scores", "masks"])
 
 everything_ok = False
@@ -198,26 +199,26 @@ if everything_ok:
                 msg=sockHndlr.get_latest()
                 if msg is not None:
                     clf_th = msg['clf_threshold']
-                    print(clf_th)
+                    # print(clf_th)
                     img_dims = np.array(msg['img_dims'], dtype=np.int)
-                    print(img_dims)
+                    # print(img_dims)
                     # print(msg['img'])
                     frame = np.array(msg['img'], dtype=np.int32)
                     # print(frame)
-                    print(frame.shape)
-                    print(frame.dtype)
+                    # print(frame.shape)
+                    # print(frame.dtype)
                     frame = frame.reshape(img_dims).astype(np.uint8)
-                    print("frame shape ", frame.shape, frame.dtype)
+                    # print("frame shape ", frame.shape, frame.dtype)
                     # Run detection
                     results = model.detect([frame], verbose=0)
 
                     r = results[0]
                     bboxes = r['rois']
-                    print("bboxes ", type(bboxes), bboxes.shape, bboxes.dtype)
+                    # print("bboxes ", type(bboxes), bboxes.shape, bboxes.dtype)
                     scores = r['scores']
-                    print("scores ", type(scores), scores.shape, scores.dtype)
+                    # print("scores ", type(scores), scores.shape, scores.dtype)
                     tt = r['class_ids']
-                    print("tt ", type(tt), tt.shape, tt.dtype)
+                    # print("tt ", type(tt), tt.shape, tt.dtype)
                     bboxes = bboxes[scores > clf_th, :]
                     tt = tt[scores > clf_th]
                     scores = scores[scores > clf_th]
@@ -230,11 +231,11 @@ if everything_ok:
                     # predicted_labels = np.array(predicted_labels)
                     # predicted_labels = predicted_labels[scores > clf_th]
                     
-                    print('bboxes')
+                    # print('bboxes')
                     sockHndlr.updateMSG('bboxes', bboxes)
-                    print('scores')
+                    # print('scores')
                     sockHndlr.updateMSG('scores', scores)
-                    print('labels')
+                    # print('labels')
                     sockHndlr.updateMSG('labels', tt)
                     sockHndlr.sendMSg2All()
 

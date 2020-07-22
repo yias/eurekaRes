@@ -165,7 +165,8 @@ Colors = eurekaRes_utils.random_colors(50)
 
 timings = np.array([], dtype=np.float64).reshape(0, 1)
 
-sockClient = socketStream.socketStream()
+sockClient = socketStream.socketStream(svrIP="128.178.145.17")
+sockClient.setBufferSize(128)
 
 sockClient.set_clientName("gaze_client")
 
@@ -205,10 +206,10 @@ if everything_ok:
             # Run detection
             # results = model.detect([frame], verbose=0)
             img_x, img_y, img_z = frame.shape
-            print(np.array([img_x, img_y, img_z]))
+            # print(np.array([img_x, img_y, img_z]))
             t_frame = frame.copy()
             t_frame = t_frame.reshape((1, np.prod(t_frame.shape)))
-            print(t_frame.shape, t_frame.dtype)
+            # print(t_frame.shape, t_frame.dtype)
             sockClient.updateMSG("img_dims", np.array([img_x, img_y, img_z]).astype(np.int32))
             # sockClient.printMSGcontents()
             sockClient.updateMSG("img", t_frame.astype(np.int))
@@ -239,14 +240,16 @@ if everything_ok:
             predicted_labels = np.array(predicted_labels)
             # predicted_labels = predicted_labels[scores > clf_threshold]
             # scores = scores[scores > clf_threshold]
-            
+
             cm_bxs, size_bxs, bx_area = eurekaRes_utils.get_cm(bboxes)
-            bboxes = bboxes[bx_area < area_threshold, :]
-            predicted_labels = predicted_labels[bx_area < area_threshold]
-            cm_bxs = cm_bxs[bx_area < area_threshold, :]
-            # print("cm_bxs.shape: ", cm_bxs.shape)
-            size_bxs = size_bxs[bx_area < area_threshold, :]
-            
+            # print(bboxes.shape, bx_area.shape)
+            if bboxes.shape[0] > 1:
+                bboxes = bboxes[bx_area < area_threshold, :]
+                predicted_labels = predicted_labels[bx_area < area_threshold]
+                cm_bxs = cm_bxs[bx_area < area_threshold, :]
+                # print("cm_bxs.shape: ", cm_bxs.shape)
+                size_bxs = size_bxs[bx_area < area_threshold, :]
+
 
             if valid_frame_counter < frame_history_length:
                 if bboxes.any():
