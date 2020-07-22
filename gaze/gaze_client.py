@@ -166,7 +166,7 @@ Colors = eurekaRes_utils.random_colors(50)
 timings = np.array([], dtype=np.float64).reshape(0, 1)
 
 sockClient = socketStream.socketStream(svrIP="128.178.145.17")
-sockClient.setBufferSize(128)
+sockClient.setBufferSize(64)
 
 sockClient.set_clientName("gaze_client")
 

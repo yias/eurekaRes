@@ -165,7 +165,7 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
 
 # initialize socketStream
 sockHndlr = socketStream.socketStream(svrIP="128.178.145.17", socketStreamMode=1)
-sockHndlr.setBufferSize(128)
+sockHndlr.setBufferSize(64)
 sockHndlr.initialize_msgStruct(["labels", "bboxes", "scores", "masks"])
 
 everything_ok = False
