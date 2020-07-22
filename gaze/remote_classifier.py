@@ -164,7 +164,7 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
 # Colors = eurekaRes_utils.random_colors(50)
 
 # initialize socketStream
-sockHndlr = socketStream.socketStream(socketStreamMode=1)
+sockHndlr = socketStream.socketStream(svrIP="128.178.145.17", socketStreamMode=1)
 sockHndlr.initialize_msgStruct(["labels", "bboxes", "scores", "masks"])
 
 everything_ok = False
