@@ -21,6 +21,17 @@ sys.path.append(str(pathlib.Path().absolute()) + "/../Aruco")
 from ArucoBoardDetection import CameraToWorld
 # exit()
 
+# gaze tracker root_dir
+gaze_root = os.path.abspath((os.environ["PY_WS"]+"/gaze_tracking_object_recognition/Gaze_tracking_Object_Detection"))
+
+# import gaze utilities
+if sys.platform == 'linux':
+    sys.path.append(gaze_root)
+else:
+    sys.path.append(sgaze_root)
+
+# from ArucoMarkerDetection import Worldcoord
+from WorldCameraOpening import WorldCameraFrame
 
 
 from tensorflow.compat.v1 import ConfigProto
@@ -49,7 +60,7 @@ from mrcnn import utils
 import mrcnn.model as modellib
 from mrcnn import visualize
 
-# Import COCO config
+# Import COCO configuration
 sys.path.append(os.path.join(ROOT_DIR, "samples/coco/"))  # To find local version
 sys.path.append(os.environ["PY_WS"] + "/coco/PythonAPI")
 import coco
@@ -111,8 +122,8 @@ outVFileName = "gazeRecordings/aruco/gaze_objects_pos_t05.mp4"
 gazeFName = "gazeRecordings/aruco/recording_aruco_gaze.csv"
 csvOutputFile = "gazeRecordings/gaze_objects_pos.csv"
 
-area_threshold = 25000
-clf_threshold = 0.6
+area_threshold = 40000#25000
+clf_threshold = 0.3
 frame_history_length = 2
 area_around_cm = 100
 bboxes_history = []
@@ -171,15 +182,18 @@ all_time_start = time.time()
 print('test before staring')
 # exit()
 
-while cap.isOpened():
+while True:
     # print('test')
     try:
 
         # Capture frame-by-frame
-        ret, frame = cap.read()
+        # ret, frame = cap.read()
+
+        # #Record World data from the ArucoMarkerDetection script to detect the ArucoMarker
+        frame = WorldCameraFrame()
         
-        if not ret:
-            break
+        # if not ret:
+        #     break
 
         # Run detection
         results = model.detect([frame], verbose=0)
@@ -264,7 +278,7 @@ while cap.isOpened():
         cv2.imshow('frame', frame)
         timings = np.vstack((timings, time.time()-start_time))
         # ar += [[gaze_coord[int(frame_counter), 0], gaze_coord[int(frame_counter), 1], str(predicted_labels), str(bboxes), str(scores[scores > clf_threshold])]] # 
-        # frame_counter += 1.0
+        frame_counter += 1.0
         # print(frame_counter)
         # # write the flipped frame
         # out.write(frame)
