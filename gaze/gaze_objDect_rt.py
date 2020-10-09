@@ -22,16 +22,19 @@ from ArucoBoardDetection import CameraToWorld
 # exit()
 
 # gaze tracker root_dir
-gaze_root = os.path.abspath((os.environ["PY_WS"]+"/gaze_tracking_object_recognition/Gaze_tracking_Object_Detection"))
+# gaze_root = os.path.abspath((os.environ["PY_WS"]+"/gaze_tracking_object_recognition/Gaze_tracking_Object_Detection"))
+
+gaze_root = os.path.abspath((os.environ["PY_WS"]+"/eurekaRes/gaze/gaze_utils/"))
 
 # import gaze utilities
-if sys.platform == 'linux':
-    sys.path.append(gaze_root)
-else:
-    sys.path.append(sgaze_root)
+sys.path.append(gaze_root)
+
 
 # from ArucoMarkerDetection import Worldcoord
 from WorldCameraOpening import WorldCameraFrame
+
+
+from socketStream_py import socketStream
 
 
 from tensorflow.compat.v1 import ConfigProto
@@ -153,22 +156,38 @@ for i in range(gaze_coord.shape[0]):
     # if gaze_coord[i, 0] < 0:
     #     print(i)
 
+# initialize socketStream for broadcasting the location of the detected objects
+sockClient = socketStream.socketStream(svrIP="128.179.136.186")
+sockClient.setBufferSize(64)
 
-# exit()
+sockClient.set_clientName("gaze_client")
+
+sockClient.initialize_msgStruct(["clf_threshold", "obj_location", "bboxes", "oboi"]) # classification threshold, objects' locations, bounding boxes, object of interest
+
+sockClient.updateMSG("clf_threshold", clf_threshold)
+
+everything_ok = False
+if sockClient.initialize_socketStream() == 0:
+    if sockClient.make_connection() == 0:
+        everything_ok = True
+
+if ~everything_ok:
+    print('No socketStream is running in the given IP. Continue without broadcasting')
+
 
 # create object to capture the frames from an input
-cap = cv2.VideoCapture(dataFolder + vFileName)
+# cap = cv2.VideoCapture(dataFolder + vFileName)
 # print(dataFolder + vFileName)
 
 # set the resolution of the frame
-cap.set(3, 1280)
-cap.set(4, 720)
+# cap.set(3, 1280)
+# cap.set(4, 720)
 
 # Define the codec and create VideoWriter object
-fourCC = cv2.VideoWriter_fourcc(*'XVID')
-out = cv2.VideoWriter(dataFolder + outVFileName, fourCC, 10.0, (1280, 720))
+# fourCC = cv2.VideoWriter_fourcc(*'XVID')
+# out = cv2.VideoWriter(dataFolder + outVFileName, fourCC, 10.0, (1280, 720))
 
-cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+# cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
 Colors = eurekaRes_utils.random_colors(50)
 
@@ -186,14 +205,9 @@ while True:
     # print('test')
     try:
 
-        # Capture frame-by-frame
-        # ret, frame = cap.read()
 
         # #Record World data from the ArucoMarkerDetection script to detect the ArucoMarker
         frame = WorldCameraFrame()
-        
-        # if not ret:
-        #     break
 
         # Run detection
         results = model.detect([frame], verbose=0)
@@ -240,16 +254,25 @@ while True:
                 del cm_history[0]
                 del score_history[0]
 
+            
+
             realWorld_coord, rwc_check = CameraToWorld(cm_bxs, frame)
+            init_points = CameraToWorld(bboxes[:,[1, 0]], frame)
+            final_points = CameraToWorld(bboxes[:,[3, 2]], frame)
+            real_bboxes = np.hstack((init_points, final_points))
             print("real world coord: ", realWorld_coord)
+            print("real boxes: ", real_bboxes)
             rbg_clr = np.array([], dtype=int).reshape(0, 3)
             cc = 0
+            oboi = []
             for rro in bboxes:
+                
                 if gaze_coord[int(frame_counter), 0] > 0:
                     # print(gaze_coord[int(frame_counter), :], rro, predicted_labels[cc]) 
                     if (gaze_coord[int(frame_counter), 0] >= rro[1]) and (gaze_coord[int(frame_counter), 0] <= rro[3]):
                         if (gaze_coord[int(frame_counter), 1] >= rro[0]) and (gaze_coord[int(frame_counter), 1] <= rro[2]):
                             rbg_clr = np.vstack((rbg_clr, np.array([0, 0, 255])))
+                            oboi = realWorld_coord[cc]
                         else:
                             rbg_clr = np.vstack((rbg_clr, np.array([255, 0, 0])))
                     else:
@@ -267,6 +290,16 @@ while True:
                 frame = eurekaRes_utils.display_real_coord(frame, bboxes, realWorld_coord, text_colors=rbg_clr)
                 # for kk in cm_bxs:
                 #    cv2.circle(frame, (int(kk[0]), int(kk[1])), 10, (0, 255, 0), -5)
+            print('oboi: ', oboi)
+            if everything_ok:
+
+                sockClient.updateMSG("obj_location", realWorld_coord)
+                sockClient.updateMSG("bboxes", bboxes)
+                if oboi is None:
+                    sockClient.updateMSG("oboi", oboi)
+                else:
+                    sockClient.updateMSG("oboi", np.zeros(2))
+                sockClient.sendMsg()
 
         if gaze_coord[int(frame_counter), 0] > 0:
             # print(gaze_coord[int(frame_counter), 0], gaze_coord[int(frame_counter), 1])
@@ -292,18 +325,19 @@ while True:
         break
 
 duration = time.time() - all_time_start
+sockClient.closeCommunication()
 
 # When everything done, release the capture
-cap.release()
-out.release()
-cv2.destroyAllWindows()
+# cap.release()
+# out.release()
+# cv2.destroyAllWindows()
 
-header = ['gaze_x', 'gaze_y', 'predicted_labels', 'boxes', 'scores']
+# header = ['gaze_x', 'gaze_y', 'predicted_labels', 'boxes', 'scores']
 # print(ar)
 # print(len(ar))
 # print(len(ar[0]))
-drame = pd.DataFrame(ar, columns=header)
-drame.to_csv(dataFolder + csvOutputFile)
+# drame = pd.DataFrame(ar, columns=header)
+# drame.to_csv(dataFolder + csvOutputFile)
 
 print("fps: ", frame_counter/duration)
 # print(timings)
