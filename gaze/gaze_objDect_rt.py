@@ -167,9 +167,9 @@ sockClient.initialize_msgStruct(["clf_threshold", "obj_location", "bboxes", "obo
 sockClient.updateMSG("clf_threshold", clf_threshold)
 
 everything_ok = False
-if sockClient.initialize_socketStream() == 0:
-    if sockClient.make_connection() == 0:
-        everything_ok = True
+# if sockClient.initialize_socketStream() == 0:
+#     if sockClient.make_connection() == 0:
+#         everything_ok = True
 
 if ~everything_ok:
     print('No socketStream is running in the given IP. Continue without broadcasting')
@@ -234,7 +234,7 @@ while True:
         # print("cm_bxs.shape: ", cm_bxs.shape)
         size_bxs = size_bxs[bx_area < area_threshold, :]
         
-
+        print('size_bxs: ', bx_area)
         if valid_frame_counter < frame_history_length:
             if bboxes.any():
                 bboxes_history += [bboxes]
@@ -257,11 +257,23 @@ while True:
             
 
             realWorld_coord, rwc_check = CameraToWorld(cm_bxs, frame)
-            init_points = CameraToWorld(bboxes[:,[1, 0]], frame)
-            final_points = CameraToWorld(bboxes[:,[3, 2]], frame)
-            real_bboxes = np.hstack((init_points, final_points))
+            bottom_left_points, t_check= CameraToWorld(bboxes[:,[1, 2]], frame)
+            bottom_right_points, t_check = CameraToWorld(bboxes[:, [3, 2]], frame)
+            x_distance = np.sum(np.abs(bottom_right_points - bottom_left_points)**2, axis=-1)**(1./2)
+
+            top_left_points, t_check= CameraToWorld(bboxes[:,[1, 0]], frame)
+            y_distance = np.sum(np.abs(top_left_points - bottom_left_points)**2, axis=-1)**(1./2)
+
+            # final_points = CameraToWorld(bboxes[:,[3, 2]], frame)
+            # real_bboxes = np.hstack((init_points, final_points))
             print("real world coord: ", realWorld_coord)
-            print("real boxes: ", real_bboxes)
+            print("top_left_points: ", top_left_points)
+            print("bottom_left_points: ", bottom_left_points)
+            print("bottom_right_points: ", bottom_right_points)
+            print("x_distance: ", x_distance)
+            print("y_distance: ", y_distance)
+            if bboxes.any():
+                cv2.circle(frame, (int(bboxes[0,1]), int(bboxes[0,0])), 20, (0, 0, 255), -5)
             rbg_clr = np.array([], dtype=int).reshape(0, 3)
             cc = 0
             oboi = []

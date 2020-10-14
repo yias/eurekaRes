@@ -1,5 +1,6 @@
 """
-@author: valentin morel
+@author: Valentin Morel
+         Iason Batzianoulis (maintainer)
 
 Detection of the auruco board in order to find for each frame the extrinsic
 coefficient to determine the pose of the world camera.
@@ -38,6 +39,49 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 camera_mtx = np.load(current_path + '/mtx_flat.npy') 
 dist_coefs = np.load(current_path + '/dist_flat.npy')
 
+def PolygonSort(corners):
+    n = len(corners)
+    cx = float(sum(x for x, y in corners)) / n
+    cy = float(sum(y for x, y in corners)) / n
+    cornersWithAngles = []
+    for x, y in corners:
+        an = (np.arctan2(y - cy, x - cx) + 2.0 * np.pi) % (2.0 * np.pi)
+        cornersWithAngles.append((x, y, an))
+    cornersWithAngles.sort(key = lambda tup: tup[2])
+    return cornersWithAngles
+    # return map(lambda (x, y, an): (x, y), cornersWithAngles)
+
+
+def PolyArea(x,y):
+    corners = np.vstack((x,y))
+    corners = list(PolygonSort(corners.T))
+    n = len(corners)
+    area = 0.0
+    for i in range(n):
+        j = (i + 1) % n
+        area += corners[i][0] * corners[j][1]
+        area -= corners[j][0] * corners[i][1]
+    area = abs(area) / 2.0
+    return area
+    # return 0.5*np.abs(np.dot(x,np.roll(y,1))-np.dot(y,np.roll(x,1)))
+
+def marker_area(marker):
+    tt = PolyArea(marker[:,0], marker[:,1])
+    return tt
+
+
+def get_cm_area(corners):
+    amarkers_cm = np.array([], dtype=float).reshape(0, 2)
+    amarkers_area = np.array([], dtype=float)
+    print('cc: ', corners[0][0])
+    for i in range(len(corners)):
+        amarkers_cm = np.vstack((amarkers_cm, np.mean(corners[i][0], axis=0)))
+        amarkers_area = np.hstack((amarkers_area, marker_area(corners[i][0])))
+    print('aa: ', amarkers_area[0])
+    s_order = np.argsort(amarkers_area)
+    return amarkers_cm[s_order,:], amarkers_area[s_order]
+    
+
 def CameraToWorld(in_camera_coord, rgbImage):
 
     global camera_mtx
@@ -59,8 +103,16 @@ def CameraToWorld(in_camera_coord, rgbImage):
     # print(ids)
     # print(corners)
     # Make sure at least 3 markers are detected
+    # print('corners: ', corners[0][0].shape)
+    # print('ids: ', len(ids))
+    
+    # print('cms: ', c_cms.shape)
+    # print('area: ', m_area)
     if ids is not None and len(ids) >= myLenId:
 
+        c_cms, m_area = get_cm_area(corners)
+        print('length: ', m_area.shape)
+        print('m_area', m_area)
 
         retval, rvecs, tvecs = aruco.estimatePoseBoard(corners, ids, board, camera_mtx, dist_coefs)
         #print('rvecs: ', rvecs)
