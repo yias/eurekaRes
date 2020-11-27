@@ -110,9 +110,9 @@ def CameraToWorld(in_camera_coord, rgbImage):
     # print('area: ', m_area)
     if ids is not None and len(ids) >= myLenId:
 
-        c_cms, m_area = get_cm_area(corners)
-        print('length: ', m_area.shape)
-        print('m_area', m_area)
+        # c_cms, m_area = get_cm_area(corners)
+        # print('length: ', m_area.shape)
+        # print('m_area', m_area)
 
         retval, rvecs, tvecs = aruco.estimatePoseBoard(corners, ids, board, camera_mtx, dist_coefs)
         #print('rvecs: ', rvecs)
