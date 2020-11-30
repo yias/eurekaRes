@@ -313,10 +313,10 @@ if everything_ok:
             # write the flipped frame
             out.write(frame)
             start_time = time.time()
-            
+
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-            
+
             # visualize.display_instances(frame, r['rois'], r['masks'], r['class_ids'], class_names, r['scores'])
         except KeyboardInterrupt:
             break

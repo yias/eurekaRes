@@ -11,7 +11,6 @@ import skimage.io
 import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
-import joblib
 
 import pathlib
 import time
@@ -225,7 +224,7 @@ timings = np.array([], dtype=np.float64).reshape(0, 1)
 start_time = time.time()
 frame_counter = 0.0
 
-# ar = []
+ar = []
 all_time_start = time.time()
 
 print('test before staring')
@@ -320,13 +319,30 @@ while True:
                 del score_history[0]
 
             # transform the correspoding coordinates of the detected objects from the image frame(pixels) to the frame of the aruco-board
-            realWorld_coord, rwc_check = CameraToWorld(cm_bxs, frame)      
+            realWorld_coord, rwc_check = CameraToWorld(cm_bxs, frame)
+            # bottom_left_points, t_check= CameraToWorld(bboxes[:,[1, 2]], frame)
+            # bottom_right_points, t_check = CameraToWorld(bboxes[:, [3, 2]], frame)
+            # x_distance = np.sum(np.abs(bottom_right_points - bottom_left_points)**2, axis=-1)**(1./2)
+
+            # top_left_points, t_check= CameraToWorld(bboxes[:,[1, 0]], frame)
+            # y_distance = np.sum(np.abs(top_left_points - bottom_left_points)**2, axis=-1)**(1./2)
+
+            # final_points = CameraToWorld(bboxes[:,[3, 2]], frame)
+            # real_bboxes = np.hstack((init_points, final_points))
+            # print("real world coord: ", realWorld_coord)
+            # print("top_left_points: ", top_left_points)
+            # print("bottom_left_points: ", bottom_left_points)
+            # print("bottom_right_points: ", bottom_right_points)
+            # print("x_distance: ", x_distance)
+            # print("y_distance: ", y_distance)
+            # if bboxes.any():
+            #     cv2.circle(frame, (int(bboxes[0,1]), int(bboxes[0,0])), 20, (0, 0, 255), -5)
+
+            
 
             # get the position (x, y in pixels) of the center of mass of each eye-pupil
             leftEye_cx, leftEye_cy = gazeUt.imgProcessingEye(cap_left, 40)
             rightEye_cx, rightEye_cy = gazeUt.imgProcessingEye(cap_right, 40)
-
-            gaze_coord = np.array([], dtype=np.float).reshape(0, 2)
 
             # if eye-pupils are detected, predict the position of the gaze
             if gazeUt.checkData([leftEye_cx, leftEye_cy, rightEye_cx, rightEye_cy]):
@@ -340,7 +356,6 @@ while True:
 
             # define a numpy array to hold the color of each bounding box (for visualization purposes)
             rbg_clr = np.array([], dtype=int).reshape(0, 3)
-
             # define a counter
             cc = 0
             # define a variable for the object of interest
@@ -348,24 +363,31 @@ while True:
 
             # check every detected object if it is the object of interest
             for rro in bboxes:
-                # if gaze coordinates exist
-                if gaze_coord.any():
-                    # check if the coordinates of the gaze are inside the bounding box
-                    if (gaze_coord[0] >= rro[1]) and (gaze_coord[0] <= rro[3]):
-                        if (gaze_coord[1] >= rro[0]) and (gaze_coord[1] <= rro[2]):
-                            # if the conditions are met, set the red color to the bounding box 
-                            # and identify this object as the object of interest
-                            rbg_clr = np.vstack((rbg_clr, np.array([0, 0, 255])))
-                            oboi = realWorld_coord[cc]
-                        else:
-                            # otherwise, set the bounding box to be red
-                            rbg_clr = np.vstack((rbg_clr, np.array([255, 0, 0])))
+
+                if (gaze_coord[0] >= rro[1]) and (gaze_coord[0] <= rro[3]):
+                    # 
+                    if (gaze_coord[1] >= rro[0]) and (gaze_coord[1] <= rro[2]):
+                        rbg_clr = np.vstack((rbg_clr, np.array([0, 0, 255])))
+                        oboi = realWorld_coord[cc]
                     else:
                         rbg_clr = np.vstack((rbg_clr, np.array([255, 0, 0])))
                 else:
                     rbg_clr = np.vstack((rbg_clr, np.array([255, 0, 0])))
 
                 cc += 1
+                    # if gaze_coord[int(frame_counter), 0] > 0:
+
+                    #     if (gaze_coord[int(frame_counter), 0] >= rro[1]) and (gaze_coord[int(frame_counter), 0] <= rro[3]):
+                    #         if (gaze_coord[int(frame_counter), 1] >= rro[0]) and (gaze_coord[int(frame_counter), 1] <= rro[2]):
+                    #             rbg_clr = np.vstack((rbg_clr, np.array([0, 0, 255])))
+                    #             oboi = realWorld_coord[cc]
+                    #         else:
+                    #             rbg_clr = np.vstack((rbg_clr, np.array([255, 0, 0])))
+                    #     else:
+                    #         rbg_clr = np.vstack((rbg_clr, np.array([255, 0, 0])))
+                    # else:
+                    #     rbg_clr = np.vstack((rbg_clr, np.array([255, 0, 0])))
+                    # cc += 1
 
             # draw the bounding boxes in the frame
             frame = eurekaRes_utils.draw_boxes(frame, bboxes, color_pallete=rbg_clr)
@@ -377,7 +399,7 @@ while True:
 
             print('oboi: ', oboi)
 
-            # if a connection to the socketStream server was established, update the message fields with the resuts and stream the message
+            # if a connection to the socketStream server was established, update the message fields with the resuts and stream the message  
             if everything_ok:
                 # update the objects' locations
                 sockClient.updateMSG("obj_location", realWorld_coord)
@@ -391,20 +413,26 @@ while True:
                 # send the message to the server
                 sockClient.sendMsg()
 
+        # if gaze_coord[int(frame_counter), 0] > 0:
+        #     # print(gaze_coord[int(frame_counter), 0], gaze_coord[int(frame_counter), 1])
+        #     gzc = (int(gaze_coord[int(frame_counter), 0]), int(gaze_coord[int(frame_counter), 1]))
+        #     # print(gzc)
+        #     cv2.circle(frame, (gzc), 20, (0, 0, 255), -5)
+
         # Display the resulted frame in a window
         cv2.imshow('frame', frame)
         timings = np.vstack((timings, time.time()-start_time))
-
-        # increase the frame counter
+        # ar += [[gaze_coord[int(frame_counter), 0], gaze_coord[int(frame_counter), 1], str(predicted_labels), str(bboxes), str(scores[scores > clf_threshold])]] # 
         frame_counter += 1.0
-
+        # print(frame_counter)
         # # write the flipped frame
         # out.write(frame)
         start_time = time.time()
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-
+        
+        # visualize.display_instances(frame, r['rois'], r['masks'], r['class_ids'], class_names, r['scores'])
     except KeyboardInterrupt:
         break
 
@@ -415,8 +443,16 @@ duration = time.time() - all_time_start
 sockClient.closeCommunication()
 
 # When everything done, release the capture
+# cap.release()
 # out.release()
 # cv2.destroyAllWindows()
+
+# header = ['gaze_x', 'gaze_y', 'predicted_labels', 'boxes', 'scores']
+# print(ar)
+# print(len(ar))
+# print(len(ar[0]))
+# drame = pd.DataFrame(ar, columns=header)
+# drame.to_csv(dataFolder + csvOutputFile)
 
 # print the statistics
 print("fps: ", frame_counter/duration)

@@ -1,6 +1,7 @@
 """
-@author: Valentin Morel
-         Iason Batzianoulis (maintainer)
+@authors: Iason Batzianoulis (maintainer) 
+          Valentin Morel
+         
 
 Detection of the auruco board in order to find for each frame the extrinsic
 coefficient to determine the pose of the world camera.
