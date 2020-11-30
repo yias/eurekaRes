@@ -1,4 +1,13 @@
+
 #!/usr/bin/env python3.7
+"""
+@author: Iason Batzianoulis
+
+Real-time object-detection with Mask-RCNN, and identification of object-of-interest with a gaze-tracker
+Identifying the real-world coordinates of the objects with an Aruco-board
+Streaming the results over the netword using socketStream
+
+"""
 
 import cv2
 

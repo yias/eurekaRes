@@ -1,5 +1,10 @@
 #!/usr/bin/env python3.7
+"""
+@author: Iason Batzianoulis
 
+Record data from the gaze-tracker cameras and train a model for gaze prediction
+
+"""
 
 
 import os

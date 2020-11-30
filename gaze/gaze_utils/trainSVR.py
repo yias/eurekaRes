@@ -2,7 +2,7 @@
 @authors: Valentin Morel
           Iason Batzianoulis
 
-Trained a SVR with the recorded data to map the gaze
+Training two SVR modes with the recorded data to predict the gaze coordinates
 
 """
 
