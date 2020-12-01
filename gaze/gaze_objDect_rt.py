@@ -1,13 +1,4 @@
-
 #!/usr/bin/env python3.7
-"""
-@author: Iason Batzianoulis
-
-Real-time object-detection with Mask-RCNN, and identification of object-of-interest with a gaze-tracker
-Identifying the real-world coordinates of the objects with an Aruco-board
-Streaming the results over the netword using socketStream
-
-"""
 
 import cv2
 
@@ -28,18 +19,23 @@ import time
 # Import gaze_tracking module
 sys.path.append(str(pathlib.Path().absolute()) + "/../Aruco")
 from ArucoBoardDetection import CameraToWorld
+# exit()
 
-# gaze_root = os.path.abspath((os.environ["PY_WS"]+"/eurekaRes/gaze/gaze_utils/"))
+# gaze tracker root_dir
+# gaze_root = os.path.abspath((os.environ["PY_WS"]+"/gaze_tracking_object_recognition/Gaze_tracking_Object_Detection"))
+
+gaze_root = os.path.abspath((os.environ["PY_WS"]+"/eurekaRes/gaze/gaze_utils/"))
 
 # import gaze utilities
-sys.path.append(os.path.abspath((os.environ["PY_WS"]+"/eurekaRes/gaze/gaze_utils/")))
+sys.path.append(gaze_root)
 
+
+# from ArucoMarkerDetection import Worldcoord
 from WorldCameraOpening import WorldCameraFrame
 from EyeCameraOpening import EyeCameraFrame
 import gazeTracking_utils as gazeUt
 
 
-# import socketStream module
 from socketStream_py import socketStream
 
 
@@ -126,10 +122,7 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
 
 # set the path and the file names of the output video files
 dataFolder = str(pathlib.Path().absolute()) + "/../data/"
-vFileName = "gazeRecordings/aruco/recording_aruco_gaze_world_clean.avi"
-outVFileName = "gazeRecordings/aruco/gaze_objects_pos_t05.mp4"
-gazeFName = "gazeRecordings/aruco/recording_aruco_gaze.csv"
-csvOutputFile = "gazeRecordings/gaze_objects_pos.csv"
+outVFileName = "gazeRecordings/aruco/gaze_objects_pos.mp4"
 
 # threshold for excluding large objects
 area_threshold = 40000
@@ -158,16 +151,16 @@ area_around_cm = 100
 
 
 ######################################################################
-# coord_df = pd.read_csv(dataFolder + gazeFName)
+coord_df = pd.read_csv(dataFolder + gazeFName)
 
-# gaze_coord = coord_df[['gaze_x', 'gaze_y']].fillna(-1)
-# gaze_coord = gaze_coord.to_numpy()
+gaze_coord = coord_df[['gaze_x', 'gaze_y']].fillna(-1)
+gaze_coord = gaze_coord.to_numpy()
 
 
-# for i in range(gaze_coord.shape[0]):
-#     if isinstance(gaze_coord[i, 0], str):
-#         gaze_coord[i, 0] = float(gaze_coord[i, 0][1:-1])
-#         gaze_coord[i, 1] = float(gaze_coord[i, 1][1:-1])
+for i in range(gaze_coord.shape[0]):
+    if isinstance(gaze_coord[i, 0], str):
+        gaze_coord[i, 0] = float(gaze_coord[i, 0][1:-1])
+        gaze_coord[i, 1] = float(gaze_coord[i, 1][1:-1])
 
 ######################################################################
 
@@ -333,12 +326,12 @@ while True:
             gaze_coord = np.array([], dtype=np.float).reshape(0, 2)
 
             # if eye-pupils are detected, predict the position of the gaze
-            if gazeUt.checkEyeData([leftEye_cx, leftEye_cy, rightEye_cx, rightEye_cy]):
+            if gazeUt.checkData([leftEye_cx, leftEye_cy, rightEye_cx, rightEye_cy]):
                 cx = regr_cx.predict([[leftEye_cx, rightEye_cx, leftEye_cy, rightEye_cy]])
                 cy = regr_cy.predict([[leftEye_cx, rightEye_cx, leftEye_cy, rightEye_cy]])
 
                 # display the gaze on the window as a red dot
-                cv2.circle(frame, (cx, cy), 20, (0, 0, 255), -5)
+                cv2.circle(frame, (gzc), 20, (0, 0, 255), -5)
 
                 gaze_coord = np.array([cx, cy])
 
@@ -395,10 +388,8 @@ while True:
                 # send the message to the server
                 sockClient.sendMsg()
 
-        # Display the resulted frames in a window
-        cv2.imshow("Left eye", cap_left)    # left-eye camera
-        cv2.imshow("Right eye", cap_right)  # right-eye camera
-        cv2.imshow('frame', frame)          # world camera
+        # Display the resulted frame in a window
+        cv2.imshow('frame', frame)
         timings = np.vstack((timings, time.time()-start_time))
 
         # increase the frame counter
