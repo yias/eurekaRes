@@ -121,8 +121,8 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
 
 
 # set the path and the file names of the output video files
-dataFolder = str(pathlib.Path().absolute()) + "/../data/"
-outVFileName = "gazeRecordings/aruco/gaze_objects_pos.mp4"
+# dataFolder = str(pathlib.Path().absolute()) + "/../data/"
+# outVFileName = "gazeRecordings/aruco/gaze_objects_pos.mp4"
 
 # threshold for excluding large objects
 area_threshold = 40000
@@ -148,21 +148,6 @@ regr_cy = joblib.load('gaze_model/SVR_model_cy.sav')
 # area around the center of mass of the object for identification of the object of interest.
 # if gaze is inside this area around the center of mass of a detected object, the object of interest would be identified as this object
 area_around_cm = 100
-
-
-######################################################################
-coord_df = pd.read_csv(dataFolder + gazeFName)
-
-gaze_coord = coord_df[['gaze_x', 'gaze_y']].fillna(-1)
-gaze_coord = gaze_coord.to_numpy()
-
-
-for i in range(gaze_coord.shape[0]):
-    if isinstance(gaze_coord[i, 0], str):
-        gaze_coord[i, 0] = float(gaze_coord[i, 0][1:-1])
-        gaze_coord[i, 1] = float(gaze_coord[i, 1][1:-1])
-
-######################################################################
 
 
 # initialize socketStream for broadcasting the location of the detected objects
@@ -202,20 +187,11 @@ if ~everything_ok:
     print('No socketStream is running in the given IP. Continue without broadcasting')
 
 
-# create object to capture the frames from an input
-# cap = cv2.VideoCapture(dataFolder + vFileName)
-
-# set the resolution of the frame
-# cap.set(3, 1280)
-# cap.set(4, 720)
-
 # Define the codec and create VideoWriter object
 # fourCC = cv2.VideoWriter_fourcc(*'XVID')
 # out = cv2.VideoWriter(dataFolder + outVFileName, fourCC, 10.0, (1280, 720))
 
 # cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-
-# Colors = eurekaRes_utils.random_colors(50)
 
 # initialize a vector for holding the duration of each loop (processing time of each loop) for statistical purposes (optional)
 timings = np.array([], dtype=np.float64).reshape(0, 1)
@@ -326,7 +302,7 @@ while True:
             gaze_coord = np.array([], dtype=np.float).reshape(0, 2)
 
             # if eye-pupils are detected, predict the position of the gaze
-            if gazeUt.checkData([leftEye_cx, leftEye_cy, rightEye_cx, rightEye_cy]):
+            if gazeUt.checkEyeData([leftEye_cx, leftEye_cy, rightEye_cx, rightEye_cy]):
                 cx = regr_cx.predict([[leftEye_cx, rightEye_cx, leftEye_cy, rightEye_cy]])
                 cy = regr_cy.predict([[leftEye_cx, rightEye_cx, leftEye_cy, rightEye_cy]])
 
