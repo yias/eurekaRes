@@ -166,7 +166,7 @@ def gazeTracking(showPupilsMarker=False, recordFrames=False, recordPupilsPos=Fal
                     print('Recording complete')
                     break
             cv2.imshow("Right eye", cap_right)
-   
+            cv2.imshow("Left eye", cap_left)
 
             cv2.imshow('World', rgbImageWorld)
 

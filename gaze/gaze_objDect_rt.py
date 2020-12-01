@@ -155,7 +155,7 @@ area_around_cm = 100
 # define a socketStream object in a client mode (socketStreamMode=0)
 # set the IP (svrIP) and port (svrPort) of the PC that a socketStream server is running
 # NB: the socketStream server should be launched first
-sockClient = socketStream.socketStream(svrIP="128.178.145.15", socketStreamMode=0, svrPort=10352)
+sockClient = socketStream.socketStream(svrIP="128.178.145.15", socketStreamMode=0, svrPort=10353)
 
 # set the buffer size of the TCP/IP communication
 sockClient.setBufferSize(64)
@@ -294,7 +294,7 @@ while True:
 
             # transform the correspoding coordinates of the detected objects from the image frame(pixels) to the frame of the aruco-board
             realWorld_coord, rwc_check = CameraToWorld(cm_bxs, frame)      
-
+            print(realWorld_coord)
             # get the position (x, y in pixels) of the center of mass of each eye-pupil
             leftEye_cx, leftEye_cy = gazeUt.imgProcessingEye(cap_left, 40)
             rightEye_cx, rightEye_cy = gazeUt.imgProcessingEye(cap_right, 40)
@@ -307,7 +307,7 @@ while True:
                 cy = regr_cy.predict([[leftEye_cx, rightEye_cx, leftEye_cy, rightEye_cy]])
 
                 # display the gaze on the window as a red dot
-                cv2.circle(frame, (gzc), 20, (0, 0, 255), -5)
+                cv2.circle(frame, (int(cx), int(cy) ), 20, (0, 0, 255), -5)
 
                 gaze_coord = np.array([cx, cy])
 
@@ -348,24 +348,31 @@ while True:
             if rwc_check:
                 frame = eurekaRes_utils.display_real_coord(frame, bboxes, realWorld_coord, text_colors=rbg_clr)
 
+            # oboi = [31, 38]
+            # np.delete(realWorld_coord, 0, 0)
             print('oboi: ', oboi)
 
             # if a connection to the socketStream server was established, update the message fields with the resuts and stream the message
             if everything_ok:
-                # update the objects' locations
-                sockClient.updateMSG("obj_location", realWorld_coord)
-                # update the bounding boxes
-                sockClient.updateMSG("bboxes", bboxes)
-                # if an object of interest was found update the correspoding field with the real values, otherwise add zeros
-                if oboi is None:
-                    sockClient.updateMSG("oboi", oboi)
-                else:
-                    sockClient.updateMSG("oboi", np.zeros(2))
-                # send the message to the server
-                sockClient.sendMsg()
+                if bboxes.any():
+                    # update the objects' locations
+                    sockClient.updateMSG("obj_location", realWorld_coord)
+
+                    # update the bounding boxes
+                    sockClient.updateMSG("bboxes", bboxes)
+
+                    # if an object of interest was found update the correspoding field with the real values, otherwise add zeros
+                    if oboi is None:
+                        sockClient.updateMSG("oboi", np.array(oboi))
+                    else:
+                        sockClient.updateMSG("oboi", np.zeros(2))
+                    # send the message to the server
+                    sockClient.sendMsg()
 
         # Display the resulted frame in a window
         cv2.imshow('frame', frame)
+        # cv2.imshow('right', cap_right)
+        # cv2.imshow('left', cap_left)
         timings = np.vstack((timings, time.time()-start_time))
 
         # increase the frame counter
