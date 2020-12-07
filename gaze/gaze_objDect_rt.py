@@ -155,7 +155,7 @@ area_around_cm = 100
 # define a socketStream object in a client mode (socketStreamMode=0)
 # set the IP (svrIP) and port (svrPort) of the PC that a socketStream server is running
 # NB: the socketStream server should be launched first
-sockClient = socketStream.socketStream(svrIP="128.178.145.15", socketStreamMode=0, svrPort=10353)
+sockClient = socketStream.socketStream(svrIP="128.178.145.15", socketStreamMode=0, svrPort=10352)
 
 # set the buffer size of the TCP/IP communication
 sockClient.setBufferSize(64)
@@ -183,7 +183,7 @@ if sockClient.initialize_socketStream() == 0:
     if sockClient.make_connection() == 0:
         everything_ok = True
 
-if ~everything_ok:
+if not everything_ok:
     print('No socketStream is running in the given IP. Continue without broadcasting')
 
 
