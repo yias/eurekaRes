@@ -43,7 +43,7 @@ from tensorflow.compat.v1 import ConfigProto
 from tensorflow.compat.v1 import InteractiveSession
 
 configgpu = ConfigProto()
-configgpu.gpu_options.allow_growth = True
+configgpu.gpu_options.allow_growth = False
 session = InteractiveSession(config=configgpu)
 
 
@@ -84,11 +84,15 @@ if not os.path.exists(COCO_MODEL_PATH):
 # Directory of images to run detection on
 IMAGE_DIR = os.path.join(ROOT_DIR, "images")
 
+# confidence threshold (for excluding detected objects of small confidence-score)
+clf_threshold = 0.8
+
 class InferenceConfig(coco.CocoConfig):
     # Set batch size to 1 since we'll be running inference on
     # one image at a time. Batch size = GPU_COUNT * IMAGES_PER_GPU
     GPU_COUNT = 1
     IMAGES_PER_GPU = 1
+    DETECTION_MIN_CONFIDENCE = clf_threshold
 
 config = InferenceConfig()
 config.display()
@@ -121,14 +125,13 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
 
 
 # set the path and the file names of the output video files
-# dataFolder = str(pathlib.Path().absolute()) + "/../data/"
-# outVFileName = "gazeRecordings/aruco/gaze_objects_pos.mp4"
+dataFolder = str(pathlib.Path().absolute()) + "/../data/"
+outVFileName = "gaze_objects_pos_20201218.mp4"
 
 # threshold for excluding large objects
 area_threshold = 40000
 
-# confidence threshold (for excluding detected objects of small confidence-score)
-clf_threshold = 0.3
+
 
 # set the number of previous frames used for the averaged prediction (frame_history_length + the current frame)
 frame_history_length = 2
@@ -155,7 +158,7 @@ area_around_cm = 100
 # define a socketStream object in a client mode (socketStreamMode=0)
 # set the IP (svrIP) and port (svrPort) of the PC that a socketStream server is running
 # NB: the socketStream server should be launched first
-sockClient = socketStream.socketStream(svrIP="128.178.145.15", socketStreamMode=0, svrPort=10352)
+sockClient = socketStream.socketStream(svrIP="128.178.145.15", socketStreamMode=0, svrPort=10353)
 
 # set the buffer size of the TCP/IP communication
 sockClient.setBufferSize(64)
@@ -188,8 +191,8 @@ if not everything_ok:
 
 
 # Define the codec and create VideoWriter object
-# fourCC = cv2.VideoWriter_fourcc(*'XVID')
-# out = cv2.VideoWriter(dataFolder + outVFileName, fourCC, 10.0, (1280, 720))
+fourCC = cv2.VideoWriter_fourcc(*'XVID')
+out = cv2.VideoWriter(dataFolder + outVFileName, fourCC, 4.0, (1280, 720))
 
 # cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
@@ -379,7 +382,7 @@ while True:
         frame_counter += 1.0
 
         # # write the flipped frame
-        # out.write(frame)
+        out.write(frame)
         start_time = time.time()
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -395,8 +398,8 @@ duration = time.time() - all_time_start
 sockClient.closeCommunication()
 
 # When everything done, release the capture
-# out.release()
-# cv2.destroyAllWindows()
+out.release()
+cv2.destroyAllWindows()
 
 # print the statistics
 print("fps: ", frame_counter/duration)
