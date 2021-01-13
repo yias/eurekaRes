@@ -2,6 +2,10 @@
 
 This folder contains the integration of eurekaRes with Mask R-CNN and the gaze-tracker from Pupil-labs for real-time object detection and object-of-interest identification
 
+A demonstration of the functionality of the methods is shown below:
+
+![](../docs/pics/gaze_objects.gif)
+
 ## installation
 
 - Clone and install Mask R-CNN from this [link](https://github.com/matterport/Mask_RCNN)
