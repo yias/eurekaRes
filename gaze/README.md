@@ -4,7 +4,7 @@ This folder contains the integration of eurekaRes with Mask R-CNN and the gaze-t
 
 A demonstration of the functionality of the methods is shown below:
 
-![](docs/pics/gaze_objects.gif)
+![](eurekaRes/docs/pics/gaze_objects.gif)
 
 ## installation
 
