@@ -269,7 +269,7 @@ traits==6.1.1
 traitsui==7.0.1
 typed-ast==1.4.1
 typing-extensions==3.7.4.3
-urllib3==1.25.10
+urllib3==1.26.5
 uvc==0.13
 vtk==9.0.1
 wcwidth @ file:///tmp/build/80754af9/wcwidth_1593447189090/work
