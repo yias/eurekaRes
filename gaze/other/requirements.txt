@@ -116,7 +116,7 @@ onnx==1.7.0
 onnxruntime==1.4.0
 open3d==0.10.0.0
 opencv-contrib-python==4.0.0.21
-opencv-python==4.0.0.21
+opencv-python==4.2.0.32
 opt-einsum==3.3.0
 packaging==20.4
 pandas==1.1.1
