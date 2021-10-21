@@ -8,7 +8,7 @@ astor==0.8.1
 astroid @ file:///tmp/build/80754af9/astroid_1592495881661/work
 astunparse==1.6.3
 attrs @ file:///tmp/build/80754af9/attrs_1598374659300/work
-Babel==2.8.0
+Babel==2.9.1
 backcall==0.2.0
 bleach==3.3.0
 bondpy==1.8.6
