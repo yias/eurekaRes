@@ -245,7 +245,7 @@ suod==0.0.4
 tensorboard==2.2.2
 tensorboard-plugin-wit==1.7.0
 tensorboardX @ file:///home/conda/feedstock_root/build_artifacts/tensorboardx_1594067496847/work
-tensorflow==2.5.1
+tensorflow==2.6.4
 tensorflow-estimator==2.2.0
 termcolor==1.1.0
 terminado==0.8.3
