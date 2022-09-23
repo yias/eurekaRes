@@ -131,7 +131,7 @@ plotly==4.11.0
 pointnet2==0.0.0
 prometheus-client==0.8.0
 prompt-toolkit @ file:///tmp/build/80754af9/prompt-toolkit_1598885458782/work
-protobuf==3.13.0
+protobuf==3.18.3
 ptyprocess==0.6.0
 pyaml==20.4.0
 pyasn1==0.4.8
