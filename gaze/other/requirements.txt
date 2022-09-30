@@ -70,7 +70,7 @@ ipywidgets==7.5.1
 isort @ file:///tmp/build/80754af9/isort_1597597579974/work
 jedi @ file:///tmp/build/80754af9/jedi_1596490743326/work
 Jinja2==2.11.3
-joblib==0.16.0
+joblib==1.2.0
 joint-state-publisher==1.15.0
 joint-state-publisher-gui==1.15.0
 jsonschema @ file:///tmp/build/80754af9/jsonschema_1594363551272/work
