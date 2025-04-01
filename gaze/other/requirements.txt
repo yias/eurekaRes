@@ -157,7 +157,7 @@ qt-gui-cpp==0.4.2
 qt-gui-py-common==0.4.2
 qtconsole @ file:///tmp/build/80754af9/qtconsole_1598374667791/work
 QtPy==1.9.0
-requests==2.24.0
+requests==2.32.2
 requests-oauthlib==1.3.0
 resource-retriever==1.12.6
 retrying==1.3.3
