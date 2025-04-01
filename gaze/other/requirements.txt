@@ -262,7 +262,7 @@ toml @ file:///tmp/build/80754af9/toml_1592853716807/work
 topic-tools==1.15.8
 torch==1.2.0
 torchvision==0.4.0a0+6b959ee
-tornado==6.0.4
+tornado==6.4.2
 tqdm==4.48.2
 traitlets==4.3.3
 traits==6.1.1
