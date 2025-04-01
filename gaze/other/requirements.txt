@@ -53,7 +53,7 @@ google-pasta==0.2.0
 grpcio==1.53.2
 h5py==2.10.0
 hiddenlayer==0.3
-idna==2.10
+idna==3.7
 image-geometry==1.15.0
 imageio==2.9.0
 imagesize==1.2.0
