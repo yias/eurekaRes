@@ -260,7 +260,7 @@ threadpoolctl==2.1.0
 tifffile==2020.8.25
 toml @ file:///tmp/build/80754af9/toml_1592853716807/work
 topic-tools==1.15.8
-torch==1.2.0
+torch==2.4.0
 torchvision==0.4.0a0+6b959ee
 tornado==6.4.2
 tqdm==4.48.2
