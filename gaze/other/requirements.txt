@@ -16,7 +16,7 @@ cachetools==4.1.1
 camera-calibration==1.15.2
 camera-calibration-parsers==1.12.0
 catkin==0.8.8
-certifi==2022.12.7
+certifi==2024.7.4
 cffi @ file:///tmp/build/80754af9/cffi_1598370813909/work
 chardet==3.0.4
 chart-studio==1.1.0
