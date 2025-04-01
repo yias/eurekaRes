@@ -138,7 +138,7 @@ pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser @ file:///tmp/build/80754af9/pycparser_1594388511720/work
 pyface==7.0.1
-Pygments==2.7.4
+Pygments==2.15.0
 pylint @ file:///tmp/build/80754af9/pylint_1598624038450/work
 pyod==0.8.3
 pyparsing==2.4.7
