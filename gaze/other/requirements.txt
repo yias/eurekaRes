@@ -274,7 +274,7 @@ uvc==0.13
 vtk==9.0.1
 wcwidth @ file:///tmp/build/80754af9/wcwidth_1593447189090/work
 webencodings==0.5.1
-Werkzeug==1.0.1
+Werkzeug==3.0.6
 widgetsnbextension==3.5.1
 wrapt==1.12.1
 xacro==1.14.4
