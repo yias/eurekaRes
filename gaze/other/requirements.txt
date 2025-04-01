@@ -21,7 +21,7 @@ cffi @ file:///tmp/build/80754af9/cffi_1598370813909/work
 chardet==3.0.4
 chart-studio==1.1.0
 combo==0.1.1
-configobj==5.0.6
+configobj==5.0.9
 controller-manager==0.19.2
 controller-manager-msgs==0.19.2
 cv-bridge==1.15.0
