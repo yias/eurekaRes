@@ -115,7 +115,7 @@ olefile==0.46
 onnx==1.17.0
 onnxruntime==1.4.0
 open3d==0.10.0.0
-opencv-contrib-python==4.0.0.21
+opencv-contrib-python==4.8.1.78
 opencv-python==4.8.1.78
 opt-einsum==3.3.0
 packaging==20.4
